@@ -1,0 +1,127 @@
+---
+import type { PortableTextBlock } from "emdash";
+import { PortableText } from "emdash/ui";
+import Button from "../ui/Button.astro";
+import SlashMark from "../ui/SlashMark.astro";
+import { highlightBraces } from "../../utils/highlight";
+
+type RichOrPlain = string | string[] | PortableTextBlock[] | null | undefined;
+
+interface Cta {
+	label: string;
+	href: string;
+	newTab?: boolean;
+}
+
+interface Props {
+	title: string;
+	/** Substring of `title` to highlight when braces aren’t used. */
+	highlight?: string;
+	lead?: string;
+	body?: RichOrPlain;
+	cta?: Cta | null;
+	showSlash?: boolean;
+	slashColor?: string;
+	buttonVariant?: "primary" | "light" | "dark" | "outline-light";
+}
+
+const {
+	title,
+	highlight,
+	lead,
+	body,
+	cta,
+	showSlash = true,
+	slashColor = "var(--color-secondary)",
+	buttonVariant = "light",
+} = Astro.props;
+
+function titleParts(full: string, hl?: string) {
+	if (!hl) return [{ type: "text" as const, value: full }];
+	const idx = full.toLowerCase().indexOf(hl.toLowerCase());
+	if (idx === -1) return [{ type: "text" as const, value: full }];
+	return [
+		{ type: "text" as const, value: full.slice(0, idx) },
+		{ type: "hl" as const, value: full.slice(idx, idx + hl.length) },
+		{ type: "text" as const, value: full.slice(idx + hl.length) },
+	].filter((part) => part.value.length > 0);
+}
+
+function hasRich(value: RichOrPlain): value is PortableTextBlock[] {
+	return (
+		Array.isArray(value) &&
+		value.length > 0 &&
+		typeof value[0] === "object" &&
+		value[0] !== null &&
+		"_type" in value[0]
+	);
+}
+
+function plainParagraphs(value: RichOrPlain): string[] {
+	if (typeof value === "string" && value.trim()) return [value];
+	if (
+		Array.isArray(value) &&
+		value.length > 0 &&
+		value.every((item) => typeof item === "string")
+	) {
+		return value as string[];
+	}
+	return [];
+}
+
+const usesBraces = title.includes("{");
+const titleHtml = usesBraces ? highlightBraces(title) : "";
+const parts = usesBraces ? [] : titleParts(title, highlight);
+const paragraphs = plainParagraphs(body);
+---
+
+{
+	showSlash && <SlashMark color={slashColor} />
+}
+
+{
+	usesBraces ? (
+		<h2 class="split-feature__title" set:html={titleHtml} />
+	) : (
+		<h2 class="split-feature__title">
+			{parts.map((part) =>
+				part.type === "hl" ? (
+					<span class="hl">{part.value}</span>
+				) : (
+					part.value
+				),
+			)}
+		</h2>
+	)
+}
+
+{lead && <p class="split-feature__lead">{lead}</p>}
+
+{
+	hasRich(body) ? (
+		<div class="split-feature__body">
+			<PortableText value={body} />
+		</div>
+	) : paragraphs.length > 0 ? (
+		<div class="split-feature__body">
+			{paragraphs.map((para) => (
+				<p>{para}</p>
+			))}
+		</div>
+	) : null
+}
+
+{
+	cta?.label && cta.href && (
+		<div class="split-feature__cta">
+			<Button
+				variant={buttonVariant}
+				href={cta.href}
+				newTab={cta.newTab}
+				arrow={true}
+			>
+				{cta.label}
+			</Button>
+		</div>
+	)
+}

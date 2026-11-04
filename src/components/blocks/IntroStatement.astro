@@ -1,0 +1,21 @@
+---
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import SectionIntro from "../sections/home/IntroStatement.astro";
+
+type IntroBlock = Extract<PageContentBlock, { _type: "marketing_intro" }>;
+type Props = BlockComponentProps<IntroBlock>;
+
+const { value } = Astro.props;
+---
+
+<SectionIntro
+	id={value.anchor_id || undefined}
+	statement={value.statement}
+	highlight={value.highlight ?? undefined}
+	body={value.body ?? undefined}
+	emphasis={value.emphasis ?? undefined}
+	showGraphic={value.show_graphic !== false}
+	graphicScheme={value.graphic_scheme === "red" ? "red" : "navy"}
+	animate={value.animate !== false}
+/>

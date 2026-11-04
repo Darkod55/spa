@@ -1,0 +1,245 @@
+---
+import type { PortableTextBlock } from "emdash";
+import { PortableText } from "emdash/ui";
+import SquarePegGraphic from "../SquarePegGraphic.astro";
+
+type RichOrPlain = string | PortableTextBlock[] | null | undefined;
+
+interface Props {
+	/** Full statement text. Highlight wraps the first case-insensitive match of `highlight`. */
+	statement?: string;
+	highlight?: string;
+	/** Supporting body — plain string or Portable Text from the CMS. */
+	body?: RichOrPlain;
+	/** Emphasised closing copy — plain string or Portable Text from the CMS. */
+	emphasis?: RichOrPlain;
+	/** Show the brand graphic. Default true. */
+	showGraphic?: boolean;
+	/** Graphic colour scheme: navy boxes / red face, or red boxes / navy face. */
+	graphicScheme?: "navy" | "red";
+	class?: string;
+	id?: string;
+	/** Animate the brand graphic on scroll. */
+	animate?: boolean;
+}
+
+const {
+	statement = "You don’t need another marketing agency. You need one that understands the sectors you work in and the people you serve.",
+	highlight = "understands the sectors you work in",
+	body = "Choosing the right marketing agency isn’t just about websites, content or social media. It’s about finding a team that can communicate your expertise, strengthen your reputation and help your organisation grow in a way that reflects your values.",
+	emphasis = "At The Square Peg Agency, that’s exactly what we help organisations achieve.",
+	showGraphic = true,
+	graphicScheme = "navy",
+	class: className,
+	id: sectionId,
+	animate = true,
+} = Astro.props;
+
+const hasStatementSlot = Astro.slots.has("statement");
+const hasBodySlot = Astro.slots.has("body");
+const hasEmphasisSlot = Astro.slots.has("emphasis");
+
+function statementParts(full: string, hl?: string) {
+	if (!hl) return [{ type: "text" as const, value: full }];
+	const idx = full.toLowerCase().indexOf(hl.toLowerCase());
+	if (idx === -1) return [{ type: "text" as const, value: full }];
+	return [
+		{ type: "text" as const, value: full.slice(0, idx) },
+		{ type: "hl" as const, value: full.slice(idx, idx + hl.length) },
+		{ type: "text" as const, value: full.slice(idx + hl.length) },
+	].filter((p) => p.value.length > 0);
+}
+
+function hasRich(value: RichOrPlain): value is PortableTextBlock[] {
+	return Array.isArray(value) && value.length > 0;
+}
+
+function hasPlain(value: RichOrPlain): value is string {
+	return typeof value === "string" && value.trim().length > 0;
+}
+
+const parts = statementParts(statement, highlight);
+const showBody = hasBodySlot || hasRich(body) || hasPlain(body);
+const showEmphasis = hasEmphasisSlot || hasRich(emphasis) || hasPlain(emphasis);
+---
+
+<section class:list={["intro-statement", className]} id={sectionId}>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container intro-statement__inner">
+		{
+			showGraphic && (
+				<div class="intro-statement__graphic">
+					<SquarePegGraphic scheme={graphicScheme} {animate} />
+				</div>
+			)
+		}
+
+		<div class="intro-statement__copy">
+			<p class="intro-statement__statement">
+				{
+					hasStatementSlot ? (
+						<slot name="statement" />
+					) : (
+						parts.map((part) =>
+							part.type === "hl" ? (
+								<span class="hl">{part.value}</span>
+							) : (
+								part.value
+							),
+						)
+					)
+				}
+			</p>
+
+			<div class="intro-statement__paras">
+				{
+					showBody && (
+						<div class="intro-statement__body">
+							{
+								hasBodySlot ? (
+									<slot name="body" />
+								) : hasRich(body) ? (
+									<PortableText value={body} />
+								) : (
+									<p>{body}</p>
+								)
+							}
+						</div>
+					)
+				}
+				{
+					showEmphasis && (
+						<div class="intro-statement__emphasis">
+							{
+								hasEmphasisSlot ? (
+									<slot name="emphasis" />
+								) : hasRich(emphasis) ? (
+									<PortableText value={emphasis} />
+								) : (
+									<p>{emphasis}</p>
+								)
+							}
+						</div>
+					)
+				}
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.intro-statement {
+		background: var(--color-white);
+	}
+
+	.intro-statement__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 48px 96px;
+		/* Extra bottom padding: next section’s slant overlaps by ~64px */
+		padding-block: 56px 104px;
+	}
+
+	.intro-statement__graphic {
+		/* Keeps the tilted square’s corners inside the section */
+		flex: none;
+		padding: 12px;
+	}
+
+	.intro-statement__copy {
+		flex: 1 1 280px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+	}
+
+	.intro-statement__statement {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		font-size: var(--fs-statement);
+		line-height: 1.15;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.intro-statement__statement :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.intro-statement__paras {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	.intro-statement__body,
+	.intro-statement__emphasis {
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.75;
+	}
+
+	.intro-statement__body {
+		font-weight: 400;
+		color: var(--color-text-body);
+	}
+
+	.intro-statement__emphasis {
+		font-weight: 600;
+		color: var(--color-navy);
+	}
+
+	.intro-statement__body :global(p),
+	.intro-statement__emphasis :global(p) {
+		margin: 0;
+	}
+
+	.intro-statement__body :global(p + p),
+	.intro-statement__emphasis :global(p + p) {
+		margin-block-start: 0.75em;
+	}
+
+	.intro-statement__body :global(a),
+	.intro-statement__emphasis :global(a) {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.intro-statement__emphasis :global(strong) {
+		font-weight: 700;
+	}
+
+	/* Tablet: keep graphic | copy side-by-side, tighten gap */
+	@media (max-width: 1023px) and (min-width: 768px) {
+		.intro-statement__inner {
+			gap: 40px;
+		}
+
+		.intro-statement__graphic :global(.sp-graphic) {
+			width: 220px;
+		}
+	}
+
+	/* Mobile only: stack graphic above copy */
+	@media (max-width: 767px) {
+		.intro-statement__inner {
+			gap: 40px;
+		}
+
+		.intro-statement__graphic {
+			width: 100%;
+		}
+
+		.intro-statement__graphic :global(.sp-graphic) {
+			width: 180px;
+		}
+
+		.intro-statement__copy {
+			flex-basis: 100%;
+		}
+	}
+</style>

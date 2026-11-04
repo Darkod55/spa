@@ -1,0 +1,108 @@
+---
+import BrandMark from "./BrandMark.astro";
+
+interface Props {
+	/** CSS length, e.g. "150px" or "0.62em". */
+	size: string;
+	/** Rotation angle. Default -15deg. */
+	angle?: string;
+	/** White outline / padding thickness. Default 9px. */
+	outline?: string;
+	/** Inner face colour. Default brand red. */
+	faceColour?: string;
+	/** Rotate from 0deg and fade in on load / when `.is-inview`. */
+	animate?: boolean;
+	class?: string;
+}
+
+const {
+	size,
+	angle = "-15deg",
+	outline = "9px",
+	faceColour = "var(--color-red)",
+	animate = false,
+	class: className = "",
+} = Astro.props;
+---
+
+<span
+	class:list={["tilted-mark", animate && "tilted-mark--animate", className]}
+	style={`--tm-size: ${size}; --tm-angle: ${angle}; --tm-outline: ${outline}; --tm-face: ${faceColour};`}
+	aria-hidden="true"
+>
+	<span class="tilted-mark__face">
+		<BrandMark />
+	</span>
+</span>
+
+<style>
+	.tilted-mark {
+		display: inline-block;
+		box-sizing: border-box;
+		width: var(--tm-size);
+		height: var(--tm-size);
+		padding: var(--tm-outline);
+		background: var(--color-white);
+		transform: rotate(var(--tm-angle));
+		vertical-align: middle;
+		flex: none;
+	}
+
+	.tilted-mark__face {
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		padding: 13%;
+		background: var(--tm-face);
+		color: var(--color-white);
+	}
+
+	.tilted-mark__face :global(.brand-mark) {
+		width: 100%;
+		height: 100%;
+	}
+
+	.tilted-mark--animate {
+		opacity: 0;
+		transform: rotate(0deg);
+		transition:
+			opacity 400ms ease-out,
+			transform 400ms ease-out;
+	}
+
+	.tilted-mark--animate.is-inview,
+	.tilted-mark--animate:not(.tilted-mark--js) {
+		opacity: 1;
+		transform: rotate(var(--tm-angle));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.tilted-mark--animate {
+			opacity: 1;
+			transform: rotate(var(--tm-angle));
+			transition: none;
+		}
+	}
+</style>
+
+{
+	animate && (
+		<script>
+			const roots = document.querySelectorAll(".tilted-mark--animate");
+			for (const root of roots) {
+				root.classList.add("tilted-mark--js");
+			}
+
+			if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				for (const root of roots) root.classList.add("is-inview");
+			} else {
+				requestAnimationFrame(() => {
+					for (const root of roots) root.classList.add("is-inview");
+				});
+			}
+		</script>
+	)
+}

@@ -1,0 +1,125 @@
+---
+import type { ImageMetadata } from "astro";
+import type { PortableTextBlock } from "emdash";
+import {
+	type SurfaceColor,
+	type SurfaceDivider,
+	isLightSurface,
+	normalizeSurfaceColor,
+	normalizeSurfaceDivider,
+	normalizeTextColor,
+} from "../../../design/surfaces";
+import BandedImage from "../../ui/BandedImage.astro";
+import SplitFeature from "../SplitFeature.astro";
+import SplitFeatureText from "../SplitFeatureText.astro";
+import westminsterBw from "../../../assets/images/home/westminster-bw.jpg";
+
+type RichOrPlain = string | string[] | PortableTextBlock[] | null | undefined;
+
+interface Cta {
+	label: string;
+	href: string;
+	newTab?: boolean;
+}
+
+interface Props {
+	background?: SurfaceColor | string;
+	/** @deprecated Use `background`. */
+	tone?: SurfaceColor | string;
+	textColor?: SurfaceColor | string;
+	divider?: SurfaceDivider | string | boolean;
+	/** @deprecated Use `divider`. */
+	slantTop?: boolean;
+	imageSide?: "right" | "left";
+	showSlash?: boolean;
+	title?: string;
+	highlight?: string;
+	lead?: string;
+	body?: RichOrPlain;
+	cta?: Cta;
+	image?: ImageMetadata;
+	cmsImage?: { id: string; src?: string; alt?: string; [key: string]: unknown } | null;
+	imageAlt?: string;
+	imagePosition?: string;
+	imageCorners?: "tl-br" | "tl-bl";
+	imageFilter?: "none" | "grayscale";
+	class?: string;
+	id?: string;
+}
+
+const {
+	background,
+	tone,
+	textColor,
+	divider,
+	slantTop,
+	imageSide = "right",
+	showSlash = true,
+	title = "Better understanding creates better marketing",
+	highlight,
+	lead = "In sectors where credibility, ethics and reputation matter, effective marketing is about more than visibility. It’s about building trust, demonstrating expertise and helping the right people find you.",
+	body,
+	cta = { label: "Book a discovery call", href: "/contact" },
+	image,
+	cmsImage,
+	imageAlt = "Big Ben and the Houses of Parliament from Westminster Bridge, in black and white",
+	imagePosition = "100% 50%",
+	imageCorners = "tl-br",
+	imageFilter = "none",
+	class: className,
+	id: sectionId,
+} = Astro.props;
+
+const resolvedBackground = normalizeSurfaceColor(background ?? tone, "tertiary");
+const resolvedText = normalizeTextColor(textColor, resolvedBackground);
+const resolvedDivider = normalizeSurfaceDivider(
+	divider ?? (slantTop === undefined ? undefined : slantTop),
+	"slant-top",
+);
+
+const resolvedImage = cmsImage ? undefined : (image ?? westminsterBw);
+const buttonVariant = isLightSurface(resolvedBackground) ? "primary" : "light";
+const slashColor =
+	resolvedBackground === "primary"
+		? "var(--color-secondary-on-primary)"
+		: resolvedBackground === "secondary" || resolvedBackground === "black"
+			? "var(--color-white)"
+			: "var(--color-secondary)";
+
+const defaultBody = [
+	"Marketing isn’t one-size-fits-all. The audiences, sensitivities and challenges faced by organisations in addiction, mental health, behavioural health and wellness are very different from those in retail, hospitality or professional services. Your marketing should reflect that.",
+	"Whether you’re launching a new service, repositioning your brand or looking for ongoing marketing support, our role is the same: to help you communicate more clearly, build trust and support sustainable growth.",
+];
+
+const resolvedBody = body ?? defaultBody;
+---
+
+<SplitFeature
+	background={resolvedBackground}
+	textColor={resolvedText}
+	divider={resolvedDivider}
+	{imageSide}
+	id={sectionId}
+	class={className}
+>
+	<SplitFeatureText
+		{title}
+		{highlight}
+		{lead}
+		body={resolvedBody}
+		{cta}
+		{showSlash}
+		{slashColor}
+		{buttonVariant}
+	/>
+
+	<BandedImage
+		slot="media"
+		image={resolvedImage}
+		cmsImage={cmsImage}
+		alt={imageAlt}
+		position={imagePosition}
+		filter={imageFilter}
+		corners={imageCorners}
+	/>
+</SplitFeature>

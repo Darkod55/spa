@@ -1,0 +1,56 @@
+---
+import AuditBar from "./AuditBar.astro";
+import Header from "./Header.astro";
+
+interface Props {
+	showAuditBar?: boolean;
+}
+
+const { showAuditBar = true } = Astro.props;
+---
+
+<div class="site-chrome" id="site-chrome">
+	<AuditBar show={showAuditBar} />
+	<Header />
+</div>
+
+<script>
+	function initStickyChrome() {
+		const chrome = document.getElementById("site-chrome");
+		if (!(chrome instanceof HTMLElement)) return;
+		if (chrome.dataset.scrollBound === "true") return;
+		chrome.dataset.scrollBound = "true";
+
+		const threshold = 12;
+		let ticking = false;
+
+		const update = () => {
+			const scrolled = window.scrollY > threshold;
+			chrome.classList.toggle("is-scrolled", scrolled);
+			ticking = false;
+		};
+
+		const onScroll = () => {
+			if (!ticking) {
+				ticking = true;
+				requestAnimationFrame(update);
+			}
+		};
+
+		update();
+		window.addEventListener("scroll", onScroll, { passive: true });
+	}
+
+	initStickyChrome();
+	document.addEventListener("astro:page-load", initStickyChrome);
+</script>
+
+<style>
+	.site-chrome {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		/* Keeps page content from showing through during resize */
+		background: var(--color-white);
+	}
+</style>

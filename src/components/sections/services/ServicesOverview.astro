@@ -1,0 +1,114 @@
+---
+import SlashMark from "../../ui/SlashMark.astro";
+import NumberedStrips, {
+	type NumberedStripItem,
+} from "../../ui/NumberedStrips.astro";
+import { servicesOverview as defaultContent } from "../../../content/services";
+import type { ServiceNavItem } from "../../../data/services";
+import { highlightBraces } from "../../../utils/highlight";
+
+interface Props {
+	id?: string;
+	title?: string;
+	intro?: string;
+	services?: readonly ServiceNavItem[];
+	class?: string;
+}
+
+const {
+	id: sectionId = "overview",
+	title = defaultContent.title,
+	intro = defaultContent.intro,
+	services = defaultContent.services,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+
+const stripItems: NumberedStripItem[] = services.map((item) => ({
+	text: item.title,
+	href: `#${item.id}`,
+}));
+---
+
+<section class:list={["services-overview", className]} id={sectionId}>
+	<div class="container services-overview__inner">
+		<div class="services-overview__copy">
+			<SlashMark color="var(--color-red)" />
+			<h2 class="services-overview__title" set:html={titleHtml} />
+			<p class="services-overview__intro">{intro}</p>
+		</div>
+
+		<nav class="services-overview__nav" aria-label="Services">
+			<NumberedStrips
+				items={stripItems}
+				tone="muted"
+				columns={2}
+				size="md"
+			/>
+		</nav>
+	</div>
+</section>
+
+<style>
+	.services-overview {
+		--overview-pad-top: 48px;
+		/* Absorb ServiceBlock's 56px slant overlap (+ breathing room) */
+		--overview-pad-bottom: 136px;
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.services-overview__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 48px 80px;
+		padding-block: var(--overview-pad-top) var(--overview-pad-bottom);
+	}
+
+	.services-overview__copy {
+		display: flex;
+		flex: 1 1 380px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 22px;
+		min-width: 0;
+		max-width: 520px;
+	}
+
+	.services-overview__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+		line-height: 1.12;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.services-overview__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.services-overview__intro {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-body);
+	}
+
+	.services-overview__nav {
+		flex: 1.2 1 520px;
+		min-width: 0;
+	}
+
+	@media (max-width: 639px) {
+		.services-overview {
+			--overview-pad-top: 32px;
+			--overview-pad-bottom: 112px;
+		}
+	}
+</style>

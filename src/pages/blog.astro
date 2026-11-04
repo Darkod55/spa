@@ -1,0 +1,209 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import SlashMark from "../components/ui/SlashMark.astro";
+import FeaturedPost from "../components/blog/FeaturedPost.astro";
+import CategoryFilters from "../components/blog/CategoryFilters.astro";
+import PostCard from "../components/blog/PostCard.astro";
+import BlogPagination from "../components/blog/BlogPagination.astro";
+import BlogNewsletter from "../components/blog/BlogNewsletter.astro";
+import { blogHero, blogMeta } from "../content/blog";
+import { highlightBraces } from "../utils/highlight";
+import {
+	BLOG_CATEGORIES,
+	BLOG_PAGE_SIZE,
+	filterPostsByCategory,
+	getFeaturedPost,
+	getPublishedPosts,
+	getUsedCategories,
+	paginatePosts,
+} from "../utils/blog";
+
+const allEntries = await getCollection("blog");
+const published = getPublishedPosts(allEntries);
+const featured = getFeaturedPost(published);
+
+const pageParam = Number(Astro.url.searchParams.get("page") ?? "1");
+const pageRequested = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+
+const listingSource = published.filter((post) => post.id !== featured?.id);
+const usedCategories = getUsedCategories(listingSource);
+
+const categoryParam = Astro.url.searchParams.get("category") ?? undefined;
+const validCategory = usedCategories.find(
+	(item) => item.toLowerCase() === categoryParam?.toLowerCase(),
+);
+const activeCategory = validCategory;
+
+const filtered = filterPostsByCategory(listingSource, activeCategory);
+const { items: pageItems, page, totalPages } = paginatePosts(
+	filtered,
+	pageRequested,
+);
+const visibleIds = new Set(pageItems.map((post) => post.id));
+
+const latestTitleHtml = highlightBraces("Latest {articles}");
+---
+
+<BaseLayout title={blogMeta.title} description={blogMeta.description}>
+	<Hero {...blogHero} />
+
+	{
+		featured && (
+			<section class="blog-featured">
+				<div class="container">
+					<FeaturedPost post={featured} />
+				</div>
+			</section>
+		)
+	}
+
+	<section class="blog-latest">
+		<div class="container blog-latest__inner">
+			<div class="blog-latest__header">
+				<div class="blog-latest__heading">
+					<SlashMark class="blog-latest__slash" />
+					<h2 class="blog-latest__title" set:html={latestTitleHtml} />
+				</div>
+				<CategoryFilters
+					active={activeCategory}
+					categories={usedCategories}
+				/>
+			</div>
+
+			<div
+				class="blog-latest__grid"
+				data-blog-grid
+				data-page-size={String(BLOG_PAGE_SIZE)}
+				data-active-category={activeCategory ?? ""}
+				data-active-page={String(page)}
+			>
+				{
+					listingSource.map((post) => (
+						<div
+							class="blog-latest__item"
+							data-category={post.data.category}
+							hidden={!visibleIds.has(post.id)}
+						>
+							<PostCard post={post} showExcerpt showRead />
+						</div>
+					))
+				}
+			</div>
+
+			<p
+				class="blog-latest__empty"
+				data-blog-empty
+				hidden={filtered.length > 0}
+			>
+				No articles in this category yet. Try another filter or check back soon.
+			</p>
+
+			<BlogPagination
+				page={page}
+				totalPages={totalPages}
+				category={activeCategory}
+				class="blog-latest__pagination"
+			/>
+		</div>
+	</section>
+
+	<BlogNewsletter />
+</BaseLayout>
+
+<style>
+	.blog-featured {
+		padding: 56px 0 24px;
+		background: var(--color-white);
+	}
+
+	.blog-latest {
+		position: relative;
+		overflow: hidden;
+		padding: 72px 0 120px;
+		background: var(--color-white);
+	}
+
+	.blog-latest__inner {
+		display: flex;
+		flex-direction: column;
+		gap: 36px;
+	}
+
+	.blog-latest__header {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 28px;
+	}
+
+	.blog-latest__heading {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	.blog-latest__slash {
+		width: 56px;
+		height: 20px;
+	}
+
+	.blog-latest__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: clamp(2.25rem, 3.6vw, 3.25rem);
+		line-height: 1.05;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.blog-latest__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.blog-latest__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 28px 24px;
+	}
+
+	.blog-latest__item {
+		min-width: 0;
+		height: 100%;
+	}
+
+	.blog-latest__empty {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.7;
+		color: var(--color-text-body);
+	}
+
+	.blog-latest__pagination {
+		margin-top: 24px;
+	}
+
+	@media (max-width: 1023px) {
+		.blog-latest__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 639px) {
+		.blog-featured {
+			padding: 40px 0 8px;
+		}
+
+		.blog-latest {
+			padding: 56px 0 96px;
+		}
+
+		.blog-latest__grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

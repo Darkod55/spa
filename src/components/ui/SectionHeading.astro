@@ -1,0 +1,88 @@
+---
+import SlashMark from "./SlashMark.astro";
+
+interface Props {
+	/** Background tone — controls .hl colour */
+	tone?: "light" | "navy" | "royal" | "red";
+	/** Show the triple-slash mark above the heading */
+	slash?: boolean;
+	/** Slash stroke colour override */
+	slashColor?: string;
+	/** Use large h2 scale */
+	size?: "default" | "lg";
+	as?: "h2" | "h1" | "h3" | "p";
+	class?: string;
+}
+
+const {
+	tone = "light",
+	slash = true,
+	slashColor,
+	size = "default",
+	as: Tag = "h2",
+	class: className = "",
+} = Astro.props;
+
+const resolvedSlash =
+	slashColor ??
+	(tone === "navy"
+		? "var(--color-red-on-navy)"
+		: tone === "royal"
+			? "var(--color-red-on-royal)"
+			: tone === "red"
+				? "var(--color-white)"
+				: "var(--color-red)");
+---
+
+<div class:list={["section-heading", `tone-${tone}`, className]} data-tone={tone}>
+	{slash && <SlashMark color={resolvedSlash} class="section-heading__slash" />}
+	<Tag class:list={["section-heading__title", size === "lg" && "section-heading__title--lg"]}>
+		<slot />
+	</Tag>
+</div>
+
+<style>
+	.section-heading {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+
+	.section-heading__title {
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2);
+		font-weight: 600;
+		line-height: 1.04;
+		text-transform: uppercase;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.section-heading__title--lg {
+		font-size: var(--fs-h2-lg);
+		line-height: 0.98;
+	}
+
+	.tone-navy .section-heading__title,
+	.tone-royal .section-heading__title,
+	.tone-red .section-heading__title {
+		color: var(--color-white);
+	}
+
+	.section-heading :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.tone-navy :global(.hl) {
+		color: var(--color-red-on-navy);
+	}
+
+	.tone-royal :global(.hl) {
+		color: var(--color-red-on-royal);
+	}
+
+	.tone-red :global(.hl) {
+		color: var(--color-white);
+	}
+</style>

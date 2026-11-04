@@ -1,0 +1,135 @@
+---
+import type { ImageMetadata } from "astro";
+import SlashMark from "../../ui/SlashMark.astro";
+import TeamCard from "../../ui/TeamCard.astro";
+import { team as defaultTeam, type TeamMember } from "../../../data/team";
+import { highlightBraces } from "../../../utils/highlight";
+
+interface Props {
+	id?: string;
+	title?: string;
+	members?: TeamMember[];
+	class?: string;
+}
+
+const {
+	id: sectionId = "team",
+	title = "Our {dedicated} team",
+	members = defaultTeam,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+
+const photoModules = import.meta.glob<{ default: ImageMetadata }>(
+	"../../../assets/images/team/*.{jpg,jpeg,png,webp}",
+	{ eager: true },
+);
+
+function photoFor(slug: string): ImageMetadata | undefined {
+	const entry = Object.entries(photoModules).find(([path]) => {
+		const file = path.split("/").pop() ?? "";
+		return file.replace(/\.(jpe?g|png|webp)$/i, "") === slug;
+	});
+	return entry?.[1].default;
+}
+---
+
+<section class:list={["team", className]} id={sectionId}>
+	<div class="team__shade" aria-hidden="true"></div>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container team__inner">
+		<header class="team__header">
+			<SlashMark color="var(--color-red)" />
+			<h2 class="team__title" set:html={titleHtml} />
+		</header>
+
+		<div class="team__grid">
+			{
+				members.map((member) => (
+					<TeamCard
+						name={member.name}
+						role={member.role}
+						bio={member.bio}
+						photo={photoFor(member.slug)}
+					/>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.team {
+		--team-pad-top: var(--space-band); /* 104px */
+		--team-pad-bottom: 160px; /* allows 56px CTA slant overlap */
+		--team-gap: 56px;
+		position: relative;
+		overflow: hidden;
+		background: var(--color-grey-50);
+	}
+
+	.team__shade {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background: var(--color-grey-100);
+		clip-path: polygon(0 40%, 100% 18%, 100% 100%, 0 100%);
+		pointer-events: none;
+	}
+
+	.team__inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--team-gap);
+		padding-block: var(--team-pad-top) var(--team-pad-bottom);
+	}
+
+	.team__header {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18px;
+	}
+
+	.team__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: clamp(2.5rem, 4.4vw, 4rem);
+		font-weight: 600;
+		line-height: 1;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.team__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.team__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 32px 28px;
+		align-items: stretch;
+	}
+
+	@media (max-width: 1023px) {
+		.team__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 639px) {
+		.team {
+			--team-pad-top: var(--space-band-sm); /* 80px */
+			--team-pad-bottom: 136px;
+		}
+
+		.team__grid {
+			grid-template-columns: minmax(0, 1fr);
+			gap: var(--gap-sm); /* 24px */
+		}
+	}
+</style>

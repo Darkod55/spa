@@ -1,0 +1,179 @@
+---
+import BeliefCard from "../../ui/BeliefCard.astro";
+import { beliefs as defaultBeliefs, type Belief } from "../../../data/home";
+import { highlightBraces } from "../../../utils/highlight";
+
+interface Props {
+	id?: string;
+	title?: string;
+	intro?: string;
+	items?: Belief[];
+	/**
+	 * Previous section ends with a slanted overlap into this one —
+	 * skip top band pad so the seam isn’t doubled. Straight bottoms
+	 * (e.g. after Better Understanding) do not use this.
+	 */
+	afterSplit?: boolean;
+	/**
+	 * Next section starts with a slanted top overlapping this one —
+	 * keep band bottom pad and add slant overlap so content isn’t covered.
+	 */
+	beforeSplit?: boolean;
+	class?: string;
+}
+
+const {
+	id: sectionId,
+	title = "What we {stand for}",
+	intro = "Three beliefs shape every strategy, website and campaign we create.",
+	items = defaultBeliefs,
+	afterSplit = false,
+	beforeSplit = false,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+const offsets = ["0", "1", "2"] as const;
+---
+
+<section
+	class:list={[
+		"beliefs",
+		afterSplit && "beliefs--after-split",
+		beforeSplit && "beliefs--before-split",
+		className,
+	]}
+	id={sectionId}
+>
+	<div class="beliefs__shade" aria-hidden="true"></div>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container beliefs__inner">
+		<header class="beliefs__header">
+			<h2 class="beliefs__title" set:html={titleHtml} />
+			<p class="beliefs__intro">{intro}</p>
+		</header>
+
+		<div class="beliefs__grid">
+			{
+				items.map((item, index) => (
+					<BeliefCard
+						number={item.number}
+						title={item.title}
+						lead={item.lead}
+						body={item.body}
+						offset={offsets[index] ?? "0"}
+					/>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.beliefs {
+		--beliefs-pad-top: var(--space-band);
+		--beliefs-pad-bottom: var(--space-band);
+		position: relative;
+		overflow: hidden;
+		background: var(--color-grey-50);
+	}
+
+	/* Previous section already spent --split-pad-bottom — don’t double it */
+	.beliefs--after-split {
+		--beliefs-pad-top: 0px;
+	}
+
+	/* Next section’s slant overlaps this one (e.g. How we help) */
+	.beliefs--before-split {
+		--beliefs-pad-bottom: calc(var(--space-band) + var(--space-overlap));
+	}
+
+	.beliefs__shade {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background: var(--color-grey-100);
+		clip-path: polygon(0 55%, 100% 25%, 100% 100%, 0 100%);
+		pointer-events: none;
+	}
+
+	.beliefs__inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--gap-lg);
+		padding-block: var(--beliefs-pad-top) var(--beliefs-pad-bottom);
+	}
+
+	.beliefs__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 16px var(--gap-md);
+	}
+
+	.beliefs__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2);
+		font-weight: 600;
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.beliefs__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.beliefs__intro {
+		margin: 0;
+		max-width: 460px;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.65;
+		color: var(--color-text-body);
+	}
+
+	.beliefs__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 28px;
+		align-items: start;
+	}
+
+	/* Tablet + below: one card per row, full width, no stagger */
+	@media (max-width: 1023px) {
+		.beliefs__grid {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 24px;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.beliefs {
+			--beliefs-pad-top: var(--space-band-sm);
+			--beliefs-pad-bottom: var(--space-band-sm);
+		}
+
+		.beliefs--after-split {
+			--beliefs-pad-top: 0px;
+		}
+
+		.beliefs--before-split {
+			--beliefs-pad-bottom: calc(var(--space-band-sm) + var(--space-overlap-sm));
+		}
+
+		.beliefs__inner {
+			gap: var(--gap-md);
+		}
+
+		.beliefs__header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+</style>

@@ -1,0 +1,210 @@
+---
+interface Props {
+	url: string;
+	title: string;
+}
+
+const { url, title } = Astro.props;
+
+const encodedUrl = encodeURIComponent(url);
+const encodedTitle = encodeURIComponent(title);
+const linkedInHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+const xHref = `https://x.com/intent/post?url=${encodedUrl}&text=${encodedTitle}`;
+const emailHref = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
+---
+
+<div class="share-buttons">
+	<p class="share-buttons__label">Share this article</p>
+	<div class="share-buttons__row">
+		<a
+			class="share-buttons__btn"
+			href={linkedInHref}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label="Share on LinkedIn"
+		>
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path
+					d="M6.5 9.5V17M6.5 7.2v.05M10.5 17v-4.2c0-1.5.9-2.3 2.1-2.3 1.1 0 1.9.7 1.9 2.2V17M17.5 17v-4.8c0-2.5-1.4-3.7-3.3-3.7-1.5 0-2.2.8-2.6 1.4"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		</a>
+		<a
+			class="share-buttons__btn"
+			href={xHref}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label="Share on X"
+		>
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path
+					d="M6 6l12 12M18 6L6 18"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+				/>
+			</svg>
+		</a>
+		<a
+			class="share-buttons__btn"
+			href={emailHref}
+			aria-label="Share by email"
+		>
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path
+					d="M4 7.5h16v9H4v-9z"
+					stroke="currentColor"
+					stroke-width="1.8"
+				/>
+				<path
+					d="M4.5 8l7.5 5.5L19.5 8"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		</a>
+		<button
+			type="button"
+			class="share-buttons__btn"
+			data-copy-link
+			data-copy-url={url}
+			aria-label="Copy link"
+		>
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<path
+					d="M10 14a4 4 0 0 0 5.7.3l2-2a4 4 0 0 0-5.7-5.7l-1.1 1.1"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M14 10a4 4 0 0 0-5.7-.3l-2 2a4 4 0 0 0 5.7 5.7l1.1-1.1"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		</button>
+	</div>
+	<p class="share-buttons__live visually-hidden" aria-live="polite" data-copy-live></p>
+	<p class="share-buttons__confirm" hidden data-copy-confirm>Link copied</p>
+</div>
+
+<script>
+	function initCopyLink() {
+		const buttons = document.querySelectorAll<HTMLButtonElement>("[data-copy-link]");
+		for (const button of buttons) {
+			if (button.dataset.bound === "true") continue;
+			button.dataset.bound = "true";
+
+			button.addEventListener("click", async () => {
+				const url = button.dataset.copyUrl;
+				if (!url) return;
+
+				const root = button.closest(".share-buttons");
+				const live = root?.querySelector<HTMLElement>("[data-copy-live]");
+				const confirm = root?.querySelector<HTMLElement>("[data-copy-confirm]");
+
+				try {
+					await navigator.clipboard.writeText(url);
+					if (live) live.textContent = "Link copied";
+					if (confirm) {
+						confirm.hidden = false;
+						window.setTimeout(() => {
+							confirm.hidden = true;
+							if (live) live.textContent = "";
+						}, 2000);
+					}
+				} catch {
+					if (live) live.textContent = "Could not copy link";
+				}
+			});
+		}
+	}
+
+	initCopyLink();
+	document.addEventListener("astro:page-load", initCopyLink);
+</script>
+
+<style>
+	.share-buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	.share-buttons__label {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		font-size: 0.875rem; /* 14px */
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-body);
+	}
+
+	.share-buttons__row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.share-buttons__btn {
+		--slant: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: 44px;
+		padding: 0;
+		border: none;
+		background: var(--color-grey-50);
+		color: var(--color-navy);
+		cursor: pointer;
+		text-decoration: none;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.share-buttons__btn:hover,
+	.share-buttons__btn:focus-visible {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.share-buttons__confirm {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--color-navy);
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+</style>

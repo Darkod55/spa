@@ -1,0 +1,630 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import {
+	type SurfaceColor,
+	normalizeSurfaceColor,
+	normalizeTextColor,
+	surfaceClasses,
+} from "../../design/surfaces";
+import Container from "../ui/Container.astro";
+import Label from "../ui/Label.astro";
+import Button from "../ui/Button.astro";
+import HeroSquares from "../ui/HeroSquares.astro";
+import SlantedDivider from "../ui/SlantedDivider.astro";
+
+interface Cta {
+	label: string;
+	href: string;
+	/** Open the link in a new tab. */
+	newTab?: boolean;
+}
+
+interface Props {
+	id?: string;
+	variant?: "home" | "page";
+	/** Section background — applies `bg-*` (default primary). */
+	background?: SurfaceColor | string;
+	/** Text colour — applies `text-*`; blank derives from background. */
+	textColor?: SurfaceColor | string;
+	/** Red eyebrow label. Omit when using `before-title` for custom chrome (e.g. blog). */
+	label?: string;
+	title: string;
+	/** Substring of `title` to wrap in .hl (case-insensitive match on first occurrence) */
+	highlight?: string;
+	subtitle?: string;
+	image?: ImageMetadata;
+	imageAlt?: string;
+	imagePosition?: string;
+	imageFilter?: "none" | "grayscale";
+	primaryCta?: Cta;
+	secondaryCta?: Cta;
+	minHeight?: string;
+	/** `post` = slightly smaller h1 for long blog titles. */
+	titleSize?: "default" | "post";
+	divider?: boolean;
+	/** Next-section colour the slant divider blends into (`bg-*`). */
+	dividerTo?: SurfaceColor | "grey" | string;
+}
+
+const {
+	id: sectionId,
+	variant = "page",
+	background,
+	textColor,
+	label,
+	title,
+	highlight,
+	subtitle,
+	image,
+	imageAlt = "",
+	imagePosition = "center",
+	imageFilter = "none",
+	primaryCta,
+	secondaryCta,
+	minHeight,
+	titleSize = "default",
+	divider = true,
+	dividerTo = "white",
+} = Astro.props;
+
+const resolvedBackground = normalizeSurfaceColor(background, "primary");
+const resolvedText = normalizeTextColor(textColor, resolvedBackground);
+const surface = surfaceClasses({
+	background: resolvedBackground,
+	text: resolvedText,
+	divider: "none",
+});
+const resolvedDividerTo = normalizeSurfaceColor(
+	dividerTo === "grey" ? "gray" : dividerTo,
+	"white",
+);
+
+const resolvedMinHeight =
+	minHeight ?? (variant === "home" ? "740px" : "540px");
+
+const hasTitleSlot = Astro.slots.has("title");
+
+function titleWithHighlight(full: string, hl?: string) {
+	if (!hl) return [{ type: "text" as const, value: full }];
+	const idx = full.toLowerCase().indexOf(hl.toLowerCase());
+	if (idx === -1) return [{ type: "text" as const, value: full }];
+	return [
+		{ type: "text" as const, value: full.slice(0, idx) },
+		{ type: "hl" as const, value: full.slice(idx, idx + hl.length) },
+		{ type: "text" as const, value: full.slice(idx + hl.length) },
+	].filter((p) => p.value.length > 0);
+}
+
+const titleParts = titleWithHighlight(title, highlight);
+/** Per-letter colour wash on .hl — off for now; set true to re-enable. */
+const animateHighlight = false;
+const photoDecorative = !imageAlt;
+const photoSizes =
+	variant === "home"
+		? "(min-width: 768px) 52vw, 100vw"
+		: "(min-width: 768px) 46vw, 100vw";
+
+const objectPosParts = imagePosition.trim().split(/\s+/);
+const objectPosX = objectPosParts[0] ?? "center";
+const objectPosY = objectPosParts[1] ?? objectPosParts[0] ?? "center";
+
+/** Final .hl colour for the wash-in (matches global surface rules). */
+const highlightColor =
+	resolvedBackground === "primary" || resolvedBackground === "black"
+		? "var(--color-secondary-on-primary)"
+		: resolvedBackground === "tertiary"
+			? "var(--color-secondary-on-tertiary)"
+			: resolvedBackground === "secondary"
+				? "var(--color-white)"
+				: "var(--color-secondary)";
+---
+
+<div class="hero-root" id={sectionId}>
+<section
+	class:list={[
+		"hero",
+		`hero--${variant}`,
+		titleSize === "post" && "hero--title-post",
+		...surface,
+	]}
+	style={`--hero-min-h: ${resolvedMinHeight}; --hero-object-pos-x: ${objectPosX}; --hero-object-pos-y: ${objectPosY}; --hero-hl: ${highlightColor}`}
+	data-background={resolvedBackground}
+	data-text={resolvedText}
+>
+	{
+		Astro.slots.has("photo") ? (
+			<div
+				class="hero__photo"
+				aria-hidden={photoDecorative ? "true" : undefined}
+			>
+				<slot name="photo" />
+			</div>
+		) : image ? (
+			<div
+				class="hero__photo"
+				aria-hidden={photoDecorative ? "true" : undefined}
+			>
+				<Image
+					src={image}
+					alt={imageAlt}
+					class:list={[
+						"hero__img",
+						imageFilter === "grayscale" && "hero__img--grayscale",
+					]}
+					widths={[640, 960, 1280, 1600, 2000]}
+					sizes={photoSizes}
+					quality={90}
+					loading="eager"
+					fetchpriority="high"
+					decoding="async"
+				/>
+			</div>
+		) : (
+			<div class="hero__photo hero__photo--placeholder" aria-hidden="true" />
+		)
+	}
+
+	<div class="hero__bands" aria-hidden="true">
+		<div class="hero__band hero__band--tertiary"></div>
+		<div class="hero__band hero__band--secondary"></div>
+		{variant === "home" && <div class="hero__band hero__band--primary-tr"></div>}
+		<div class="hero__band hero__band--secondary-br"></div>
+		<div class="hero__band hero__band--mobile-edge"></div>
+		{variant === "home" && <HeroSquares />}
+	</div>
+
+	<div class="hero__content">
+		<Container class="hero__inner">
+			<div class="hero__copy">
+				{Astro.slots.has("before-title") && (
+					<div class="hero__before">
+						<slot name="before-title" />
+					</div>
+				)}
+
+				{label && (
+					<Label variant="red" animate={true}>
+						{label}
+					</Label>
+				)}
+
+				<h1 class="hero__title">
+					{
+						hasTitleSlot ? (
+							<slot name="title" />
+						) : (
+							titleParts.map((part) =>
+								part.type === "hl" ? (
+									animateHighlight ? (
+										<span class="hl hl--wash" aria-label={part.value}>
+											{Array.from(part.value).map((ch, i) => (
+												<span
+													class="hl__char"
+													style={`--i: ${i}`}
+													aria-hidden="true"
+												>
+													{ch === " " ? "\u00A0" : ch}
+												</span>
+											))}
+										</span>
+									) : (
+										<span class="hl">{part.value}</span>
+									)
+								) : (
+									part.value
+								),
+							)
+						)
+					}
+				</h1>
+
+				{subtitle && <p class="hero__subtitle">{subtitle}</p>}
+
+				{Astro.slots.has("after-subtitle") && (
+					<div class="hero__after">
+						<slot name="after-subtitle" />
+					</div>
+				)}
+
+				{(primaryCta || secondaryCta) && (
+					<div class="hero__ctas">
+						{primaryCta && (
+							<Button
+								variant="primary"
+								href={primaryCta.href}
+								newTab={primaryCta.newTab}
+								arrow={true}
+							>
+								{primaryCta.label}
+							</Button>
+						)}
+						{secondaryCta && (
+							<Button
+								variant="light"
+								href={secondaryCta.href}
+								newTab={secondaryCta.newTab}
+								arrow={false}
+							>
+								{secondaryCta.label}
+							</Button>
+						)}
+					</div>
+				)}
+			</div>
+		</Container>
+	</div>
+</section>
+
+{
+	divider && (
+		<SlantedDivider
+			fromClass={`bg-${resolvedBackground}`}
+			toClass={`bg-${resolvedDividerTo}`}
+			accentClass={
+				resolvedBackground === "secondary" ? "bg-white" : "bg-secondary"
+			}
+		/>
+	)
+}
+</div>
+
+<style>
+	.hero-root {
+		display: block;
+	}
+
+	/* Background + text come from shared surface classes (bg-primary, text-white, …) */
+	.hero {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		isolation: isolate;
+		/* Enforce on the section itself — short page titles still fill the band */
+		min-height: var(--hero-min-h);
+	}
+
+	/* ---- Photo panel (desktop) ---- */
+	.hero__photo {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 0;
+		overflow: hidden;
+	}
+
+	.hero--home .hero__photo {
+		width: 52%;
+		clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+	}
+
+	.hero--page .hero__photo {
+		width: 46%;
+		clip-path: polygon(34% 0, 100% 0, 100% 100%, 0 100%);
+	}
+
+	.hero__photo--placeholder {
+		background: var(--color-grey-400);
+	}
+
+	.hero__img,
+	.hero__photo :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: var(--hero-object-pos-x, center) var(--hero-object-pos-y, center);
+		display: block;
+	}
+
+	.hero__img--grayscale,
+	.hero__photo :global(.hero__img--grayscale) {
+		filter: grayscale(1);
+	}
+
+	/* ---- Decorative bands ---- */
+	.hero__bands {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	.hero__band {
+		position: absolute;
+		inset: 0;
+	}
+
+	.hero--home .hero__band--tertiary {
+		background: var(--color-tertiary);
+		clip-path: polygon(58% 0, 60.4% 0, 44.8% 100%, 42.4% 100%);
+	}
+
+	.hero--home .hero__band--secondary {
+		background: var(--color-secondary);
+		clip-path: polygon(61.6% 0, 63.6% 0, 48% 100%, 46% 100%);
+	}
+
+	.hero--home .hero__band--primary-tr {
+		background: var(--color-primary);
+		clip-path: polygon(84% 0, 100% 0, 100% 26%);
+	}
+
+	.hero--home .hero__band--secondary-br {
+		background: var(--color-secondary);
+		clip-path: polygon(100% 64%, 100% 100%, 74% 100%);
+	}
+
+	.hero--page .hero__band--tertiary {
+		background: var(--color-tertiary);
+		clip-path: polygon(66% 0, 68.4% 0, 52.8% 100%, 50.4% 100%);
+	}
+
+	.hero--page .hero__band--secondary {
+		background: var(--color-secondary);
+		clip-path: polygon(69.6% 0, 71.6% 0, 56% 100%, 54% 100%);
+	}
+
+	.hero--page .hero__band--secondary-br {
+		background: var(--color-secondary);
+		clip-path: polygon(100% 66%, 100% 100%, 80% 100%);
+	}
+
+	.hero__band--mobile-edge {
+		display: none;
+		background: var(--color-secondary);
+	}
+
+	/* ---- Content ---- */
+	.hero__content {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		width: 100%;
+	}
+
+	/* Native .container — scoped styles miss child-component roots */
+	.hero__content :global(.hero__inner) {
+		display: flex;
+		align-items: center;
+		width: 100%;
+	}
+
+	.hero__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 22px;
+	}
+
+	.hero--home .hero__copy {
+		max-width: 500px;
+		padding-block: 96px;
+	}
+
+	.hero--page .hero__copy {
+		max-width: 600px;
+		padding-block: 88px;
+	}
+
+	.hero__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		text-transform: uppercase;
+		color: inherit;
+	}
+
+	/* Highlight letters start as title colour, wash to red one-by-one */
+	.hero__title :global(.hl--wash) {
+		color: inherit;
+	}
+
+	.hero__title :global(.hl__char) {
+		display: inline-block;
+		color: inherit;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.hero__title :global(.hl__char) {
+			animation: hero-hl-wash 0.55s ease-out forwards;
+			animation-delay: calc(0.85s + var(--i) * 0.045s);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero__title :global(.hl--wash),
+		.hero__title :global(.hl__char) {
+			color: var(--hero-hl);
+		}
+	}
+
+	@keyframes hero-hl-wash {
+		to {
+			color: var(--hero-hl);
+		}
+	}
+
+	.hero--home .hero__title {
+		font-size: var(--fs-display);
+		line-height: 0.96;
+	}
+
+	.hero--page .hero__title {
+		font-size: var(--fs-h1-page);
+		line-height: 0.98;
+	}
+
+	.hero--title-post .hero__title {
+		font-size: clamp(2.5rem, 4.6vw, 4.125rem); /* 40px → 66px */
+		line-height: 1.02;
+	}
+
+	.hero__subtitle {
+		margin: 0;
+		font-family: var(--font-body);
+		font-weight: 500;
+		color: inherit;
+		opacity: 0.92;
+		max-width: 36rem;
+	}
+
+	.hero--home .hero__subtitle {
+		font-size: 1.1875rem; /* 19px */
+		line-height: 1.55;
+	}
+
+	.hero--page .hero__subtitle {
+		font-size: 1.25rem; /* 20px */
+		line-height: 1.5;
+	}
+
+	.hero__ctas {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px;
+		margin-top: 10px;
+	}
+
+	.hero__before,
+	.hero__after {
+		width: 100%;
+	}
+
+	/* ---- Tablet: keep side-by-side, tighten copy ---- */
+	@media (max-width: 1023px) and (min-width: 768px) {
+		.hero--home .hero__copy,
+		.hero--page .hero__copy {
+			max-width: 50%;
+			padding-block: 50px;
+			gap: 18px;
+		}
+
+		.hero__subtitle {
+			font-size: 1.0625rem;
+		}
+	}
+
+	/* ---- Mobile only: stack ---- */
+	@media (max-width: 767px) {
+		.hero {
+			min-height: 0;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.hero__content {
+			flex: 0 0 auto;
+			display: block;
+		}
+
+		.hero__content :global(.hero__inner) {
+			display: block;
+		}
+
+		.hero--home .hero__copy,
+		.hero--page .hero__copy {
+			max-width: none;
+			padding-block: 50px;
+		}
+
+		.hero__photo {
+			position: relative;
+			order: 1;
+			width: 100%;
+			height: 300px;
+			right: auto;
+			/* Wins over the section inline style (same var on a child). */
+			--hero-object-pos-y: 55%;
+			/*
+			 * --hero-top-inset: keeps the red edge fully below the header
+			 * --hero-slant-y: left-edge Y of the photo's top diagonal cut
+			 */
+			--hero-top-inset: 18px;
+			--hero-slant-y: 52px;
+			--hero-edge-w: 10px;
+			clip-path: polygon(
+				0 calc(var(--hero-slant-y) + var(--hero-top-inset)),
+				100% var(--hero-top-inset),
+				100% 100%,
+				0 100%
+			);
+		}
+
+		.hero--home .hero__photo,
+		.hero--page .hero__photo {
+			width: 100%;
+			clip-path: polygon(
+				0 calc(var(--hero-slant-y) + var(--hero-top-inset)),
+				100% var(--hero-top-inset),
+				100% 100%,
+				0 100%
+			);
+		}
+
+		.hero__content {
+			order: 2;
+		}
+
+		/* Hide long desktop stripes; keep mobile edge + corner on the photo */
+		.hero__band--tertiary,
+		.hero__band--secondary,
+		.hero__band--primary-tr {
+			display: none;
+		}
+
+		.hero__bands {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: auto;
+			height: 300px;
+			z-index: 1;
+			pointer-events: none;
+			--hero-top-inset: 18px;
+			--hero-slant-y: 52px;
+			--hero-edge-w: 10px;
+		}
+
+		/*
+		 * Red edge sits fully inside the photo box (no overflow clip):
+		 * bottom edge = photo slant, top edge = slant − edge width.
+		 */
+		.hero__band--mobile-edge {
+			display: block;
+			background: var(--color-secondary);
+			clip-path: polygon(
+				0 calc(var(--hero-slant-y) + var(--hero-top-inset) - var(--hero-edge-w)),
+				100% calc(var(--hero-top-inset) - var(--hero-edge-w)),
+				100% calc(var(--hero-top-inset) + 1px),
+				0 calc(var(--hero-slant-y) + var(--hero-top-inset) + 1px)
+			);
+		}
+
+		.hero__band--secondary-br {
+			display: block;
+			background: var(--color-secondary);
+			clip-path: polygon(100% 66%, 100% 100%, 80% 100%);
+		}
+
+	}
+
+	@media (max-width: 639px) {
+		.hero__photo {
+			--hero-top-inset: 16px;
+			--hero-slant-y: 44px;
+			--hero-edge-w: 8px;
+		}
+
+		.hero__bands {
+			--hero-top-inset: 16px;
+			--hero-slant-y: 44px;
+			--hero-edge-w: 8px;
+		}
+	}
+
+</style>

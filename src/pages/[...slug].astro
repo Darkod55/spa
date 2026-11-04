@@ -1,0 +1,94 @@
+---
+import { getEntry, render } from "astro:content";
+import type { MarkdownHeading } from "astro";
+import { decodeSlug, getEmDashEntry, getSeoMeta } from "emdash";
+import Base from "../layouts/Base.astro";
+import LegalLayout from "../layouts/LegalLayout.astro";
+import PageView from "../components/PageView.astro";
+import { heroSeoDefaults } from "../utils/page";
+
+const raw = Astro.params.slug;
+const slugParam = Array.isArray(raw) ? raw.join("/") : raw;
+const slug = decodeSlug(slugParam);
+if (!slug) {
+	Astro.response.status = 404;
+	return Astro.rewrite("/404");
+}
+
+/** Legal Markdown pages take priority over EmDash CMS for the same slug. */
+const legal = await getEntry("legal", slug);
+
+let LegalContent: ((props: Record<string, unknown>) => any) | undefined;
+let legalHeadings: MarkdownHeading[] = [];
+let legalData:
+	| {
+			title: string;
+			highlight?: string;
+			description: string;
+			lastUpdated: string;
+			effectiveFrom?: string;
+			intro?: string;
+			draft?: boolean;
+	  }
+	| undefined;
+
+if (legal) {
+	const rendered = await render(legal);
+	LegalContent = rendered.Content;
+	legalHeadings = rendered.headings;
+	legalData = legal.data;
+}
+
+let cmsPage: Awaited<ReturnType<typeof getEmDashEntry>>["entry"] | undefined;
+let cmsSeo: ReturnType<typeof getSeoMeta> | undefined;
+
+if (!legal) {
+	const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
+	if (!page) {
+		Astro.response.status = 404;
+		return Astro.rewrite("/404");
+	}
+
+	if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+	cmsPage = page;
+	cmsSeo = getSeoMeta(page, {
+		siteUrl: Astro.url.origin,
+		path: `/${page.id}`,
+		...heroSeoDefaults(page.data.content, Astro.url.origin),
+	});
+}
+---
+
+{
+	legal && legalData && LegalContent ? (
+		<LegalLayout
+			title={legalData.title}
+			highlight={legalData.highlight}
+			description={legalData.description}
+			lastUpdated={legalData.lastUpdated}
+			effectiveFrom={legalData.effectiveFrom}
+			intro={legalData.intro}
+			draft={legalData.draft}
+			headings={legalHeadings}
+		>
+			<LegalContent />
+		</LegalLayout>
+	) : cmsPage && cmsSeo ? (
+		<Base
+			title={cmsSeo.title}
+			pageTitle={cmsPage.data.title}
+			description={cmsSeo.description}
+			image={cmsSeo.ogImage}
+			canonical={cmsSeo.canonical}
+			robots={cmsSeo.robots}
+			content={{
+				collection: "pages",
+				id: cmsPage.data.id,
+				slug: cmsPage.id,
+			}}
+		>
+			<PageView page={cmsPage} />
+		</Base>
+	) : null
+}

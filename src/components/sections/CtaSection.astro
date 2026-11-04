@@ -1,0 +1,311 @@
+---
+import Button from "../ui/Button.astro";
+import Label from "../ui/Label.astro";
+import { highlightBraces } from "../../utils/highlight";
+
+interface CtaLink {
+	label: string;
+	href: string;
+}
+
+interface Props {
+	title: string;
+	/** `lg` = homepage display size; `md` for longer headings */
+	titleSize?: "lg" | "md";
+	tagline?: string;
+	paragraphs?: string[];
+	card?: {
+		text: string;
+		cta: CtaLink;
+	};
+	/** Used when there is no card */
+	cta?: CtaLink;
+	id?: string;
+	slantTop?: boolean;
+	class?: string;
+}
+
+const {
+	title,
+	titleSize = "lg",
+	tagline,
+	paragraphs = [],
+	card,
+	cta,
+	id: sectionId,
+	slantTop = true,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+const cardTextHtml = card ? highlightBraces(card.text) : "";
+---
+
+<section
+	class:list={[
+		"cta-section",
+		"clears-footer",
+		`cta-section--title-${titleSize}`,
+		slantTop && "cta-section--slant",
+		className,
+	]}
+	id={sectionId}
+>
+	{/* Inner clip so section overflow can stay visible for the footer slant */}
+	<div class="cta-section__deco" aria-hidden="true">
+		<div class="cta-section__band cta-section__band--top"></div>
+		<div class="cta-section__band cta-section__band--royal"></div>
+		<div class="cta-section__band cta-section__band--red"></div>
+		<div class="cta-section__band cta-section__band--navy"></div>
+		<div class="cta-section__band cta-section__band--corner"></div>
+	</div>
+
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container cta-section__inner">
+		<div class="cta-section__copy">
+			<h2 class="cta-section__title" set:html={titleHtml} />
+
+			{
+				tagline && (
+					<Label variant="white" class="cta-section__tagline">
+						{tagline}
+					</Label>
+				)
+			}
+
+			{
+				paragraphs.map((paragraph) => (
+					<p class="cta-section__body">{paragraph}</p>
+				))
+			}
+
+			{
+				card ? (
+					<div class="cta-section__card">
+						<p class="cta-section__card-text" set:html={cardTextHtml} />
+						<div class="cta-section__card-cta">
+							<Button variant="primary" size="lg" href={card.cta.href}>
+								{card.cta.label}
+							</Button>
+						</div>
+					</div>
+				) : (
+					cta && (
+						<div class="cta-section__simple-cta">
+							<Button variant="light" size="lg" href={cta.href}>
+								{cta.label}
+							</Button>
+						</div>
+					)
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.cta-section {
+		--cta-slant: 56px;
+		--cta-pad-top: 160px;
+		/* Clear the footer splitter — includes the 40px overlap */
+		--cta-pad-bottom: 160px;
+		position: relative;
+		z-index: 0;
+		/* visible so the footer’s negative-margin slant isn’t clipped */
+		overflow: visible;
+		background: var(--color-red-deep);
+		color: var(--color-white);
+	}
+
+	.cta-section--slant {
+		margin-top: calc(var(--cta-slant) * -1);
+		clip-path: polygon(
+			0 var(--cta-slant),
+			100% 0,
+			100% 100%,
+			0 100%
+		);
+	}
+
+	.cta-section__deco {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.cta-section__band {
+		position: absolute;
+		inset: 0;
+	}
+
+	.cta-section__band--top {
+		background: var(--color-red);
+		clip-path: polygon(0 var(--cta-slant), 100% 0, 100% 18%, 0 46%);
+	}
+
+	.cta-section__band--royal {
+		background: var(--color-royal);
+		clip-path: polygon(74% 0, 76.4% 0, 60.4% 100%, 58% 100%);
+	}
+
+	.cta-section__band--red {
+		background: var(--color-red);
+		clip-path: polygon(77.6% 0, 79.6% 0, 63.6% 100%, 61.6% 100%);
+	}
+
+	.cta-section__band--navy {
+		background: var(--color-navy);
+		clip-path: polygon(80.8% 0, 100% 0, 100% 100%, 64.8% 100%);
+	}
+
+	.cta-section__band--corner {
+		background: var(--color-red);
+		clip-path: polygon(100% 68%, 100% 100%, 80% 100%);
+	}
+
+	.cta-section__inner {
+		position: relative;
+		z-index: 1;
+		padding-block: var(--cta-pad-top) var(--cta-pad-bottom);
+	}
+
+	.cta-section__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 22px;
+		max-width: 680px;
+	}
+
+	.cta-section__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: clamp(3.25rem, 6vw, 5.75rem);
+		font-weight: 700;
+		line-height: 0.96;
+		text-transform: uppercase;
+		color: var(--color-white);
+	}
+
+	.cta-section--title-md .cta-section__title {
+		font-size: clamp(3rem, 5.4vw, 5.25rem);
+		line-height: 0.98;
+	}
+
+	/* Longer About heading — keep copy clear of the navy panel at mid widths */
+	.cta-section--title-md .cta-section__copy {
+		max-width: 600px;
+	}
+
+	.cta-section__title :global(.hl) {
+		color: var(--color-white);
+		text-decoration: underline;
+		text-underline-offset: 0.12em;
+	}
+
+	.cta-section__copy :global(.cta-section__tagline) {
+		padding: 8px 28px;
+		font-weight: 600;
+		font-size: 1.625rem; /* 26px */
+		letter-spacing: 0.04em;
+		color: var(--color-red-deep);
+	}
+
+	.cta-section__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-on-red);
+	}
+
+	.cta-section__card {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 20px 32px;
+		width: 100%;
+		margin-top: 16px;
+		padding: 32px 36px;
+		background: var(--color-white);
+		color: var(--color-navy);
+		clip-path: polygon(
+			0 0,
+			calc(100% - 40px) 0,
+			100% 40px,
+			100% 100%,
+			0 100%
+		);
+	}
+
+	.cta-section__card-text {
+		flex: 1 1 280px;
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 1.5rem; /* 24px */
+		font-weight: 500;
+		line-height: 1.2;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.cta-section__card-text :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.cta-section__card-cta {
+		flex: 0 0 auto;
+	}
+
+	.cta-section__simple-cta {
+		margin-top: 12px;
+	}
+
+	@media (max-width: 1023px) {
+		.cta-section__band--royal,
+		.cta-section__band--red {
+			display: none;
+		}
+
+		.cta-section__band--navy {
+			clip-path: polygon(100% 40%, 100% 100%, 55% 100%);
+		}
+
+		.cta-section__copy {
+			max-width: none;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.cta-section {
+			--cta-slant: 32px;
+			--cta-pad-top: 104px;
+			--cta-pad-bottom: 120px;
+		}
+
+		.cta-section__band--navy {
+			display: none;
+		}
+
+		.cta-section__card {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 20px;
+			padding: 24px 20px;
+		}
+
+		/* Don’t grow in the column stack — that left a tall empty gap above the button */
+		.cta-section__card-text {
+			flex: 0 1 auto;
+			font-size: 1.25rem;
+		}
+
+		.cta-section__copy :global(.cta-section__tagline) {
+			font-size: 1.25rem;
+			padding: 7px 22px;
+		}
+	}
+</style>

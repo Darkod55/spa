@@ -1,0 +1,199 @@
+---
+import Container from "../../ui/Container.astro";
+import Label from "../../ui/Label.astro";
+import Button from "../../ui/Button.astro";
+import TiltedMark from "../../ui/TiltedMark.astro";
+import HeroSquares from "../../ui/HeroSquares.astro";
+import { highlightBraces } from "../../../utils/highlight";
+import { notFound } from "../../../data/notFound";
+
+const titleHtml = highlightBraces(notFound.title);
+---
+
+<section id="top" class="nf-hero" data-tone="navy">
+	<div class="nf-hero__deco" aria-hidden="true">
+		<div class="nf-hero__royal"></div>
+		<div class="nf-hero__stripe"></div>
+		<div class="nf-hero__navy-corner"></div>
+		<div class="nf-hero__red-corner"></div>
+		<HeroSquares />
+	</div>
+
+	<Container class="nf-hero__inner">
+		<div class="nf-hero__copy">
+			<Label variant="red">{notFound.label}</Label>
+			<h1 class="nf-hero__title" set:html={titleHtml} />
+			<p class="nf-hero__lead">{notFound.lead}</p>
+			<p class="nf-hero__body">{notFound.body}</p>
+			<div class="nf-hero__actions">
+				<Button variant="primary" size="lg" href={notFound.primaryCta.href}>
+					{notFound.primaryCta.label}
+				</Button>
+				<Button
+					variant="light"
+					size="lg"
+					href={notFound.secondaryCta.href}
+					arrow={false}
+				>
+					{notFound.secondaryCta.label}
+				</Button>
+			</div>
+		</div>
+
+		<div class="nf-hero__graphic" aria-hidden="true">
+			<span class="nf-hero__digit">4</span>
+			<TiltedMark size="0.62em" outline="0.04em" animate={true} />
+			<span class="nf-hero__digit">4</span>
+		</div>
+	</Container>
+</section>
+
+<style>
+	.nf-hero {
+		position: relative;
+		overflow: hidden;
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.nf-hero__deco {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.nf-hero__royal {
+		position: absolute;
+		inset: 0;
+		background: var(--color-royal);
+		clip-path: polygon(62% 0, 100% 0, 100% 100%, 44% 100%);
+	}
+
+	.nf-hero__stripe {
+		position: absolute;
+		inset: 0;
+		background: var(--color-red);
+		clip-path: polygon(59.4% 0, 61% 0, 43% 100%, 41.4% 100%);
+	}
+
+	.nf-hero__navy-corner {
+		position: absolute;
+		inset: 0;
+		background: var(--color-navy);
+		clip-path: polygon(88% 0, 100% 0, 100% 22%);
+	}
+
+	.nf-hero__red-corner {
+		position: absolute;
+		inset: 0;
+		background: var(--color-red);
+		clip-path: polygon(100% 70%, 100% 100%, 80% 100%);
+	}
+
+	.nf-hero :global(.nf-hero__inner) {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 40px 64px;
+		min-height: 660px;
+	}
+
+	.nf-hero__copy {
+		display: flex;
+		flex: 1 1 460px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 22px;
+		max-width: 560px;
+		padding: 88px 0;
+		min-width: 0;
+	}
+
+	.nf-hero__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: clamp(3.25rem, 6vw, 5.5rem); /* 52px → 88px */
+		line-height: 0.96;
+		text-transform: uppercase;
+		color: var(--color-white);
+	}
+
+	.nf-hero__lead {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1.1875rem; /* 19px */
+		font-weight: 500;
+		line-height: 1.55;
+		color: var(--color-text-on-dark);
+	}
+
+	.nf-hero__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-on-dark);
+	}
+
+	.nf-hero__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px;
+		margin-top: 10px;
+	}
+
+	.nf-hero__graphic {
+		display: flex;
+		flex: 1 1 420px;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(8px, 1.5vw, 20px);
+		padding: 40px 0 72px;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: clamp(150px, 17vw, 260px);
+		line-height: 0.8;
+		color: var(--color-white);
+		min-width: 0;
+	}
+
+	.nf-hero__digit {
+		display: block;
+	}
+
+	@media (max-width: 1023px) {
+		.nf-hero__royal {
+			clip-path: polygon(100% 35%, 100% 100%, 50% 100%);
+		}
+
+		.nf-hero__stripe {
+			display: none;
+		}
+
+		.nf-hero :global(.nf-hero__inner) {
+			flex-wrap: wrap;
+			min-height: 0;
+		}
+
+		.nf-hero__graphic {
+			order: -1;
+			flex: 1 1 100%;
+			font-size: clamp(110px, 28vw, 180px);
+			padding: 48px 0 0;
+		}
+
+		.nf-hero__copy {
+			order: 1;
+			flex: 1 1 100%;
+			max-width: none;
+			padding: 32px 0 72px;
+		}
+	}
+
+</style>

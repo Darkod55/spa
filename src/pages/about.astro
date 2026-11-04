@@ -1,0 +1,20 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import AboutIntro from "../components/sections/about/AboutIntro.astro";
+import AboutVisible from "../components/sections/about/AboutVisible.astro";
+import Team from "../components/sections/about/Team.astro";
+import CtaSection from "../components/sections/CtaSection.astro";
+import WhySpa from "../components/sections/about/WhySpa.astro";
+import { aboutHero, aboutIntro, aboutMeta } from "../content/about";
+import { aboutCta } from "../data/about";
+---
+
+<BaseLayout title={aboutMeta.title} description={aboutMeta.description}>
+	<Hero {...aboutHero} />
+	<AboutIntro {...aboutIntro} />
+	<AboutVisible />
+	<Team />
+	<CtaSection {...aboutCta} />
+	<WhySpa />
+</BaseLayout>

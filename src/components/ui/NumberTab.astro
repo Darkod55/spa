@@ -1,0 +1,48 @@
+---
+interface Props {
+	/** Display value, e.g. "01" */
+	n: string | number;
+	variant?: "navy" | "white";
+	class?: string;
+}
+
+const { n, variant = "navy", class: className = "" } = Astro.props;
+const display = typeof n === "number" ? String(n).padStart(2, "0") : n;
+---
+
+<span class:list={["number-tab", `number-tab--${variant}`, className]} aria-hidden="true">
+	{display}
+</span>
+
+<style>
+	.number-tab {
+		--slant: 10px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 48px;
+		min-height: 36px;
+		padding: 6px 22px;
+		font-family: var(--font-heading);
+		font-size: 1.25rem; /* 20px */
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: 0.02em;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.number-tab--navy {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.number-tab--white {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+</style>

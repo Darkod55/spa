@@ -1,0 +1,603 @@
+---
+import Button from "../ui/Button.astro";
+import logoColor from "../../assets/logo/tspa-color.svg?url";
+import { headerCta, mainNav } from "../../data/navigation";
+import { isActive } from "../../utils/isActive";
+
+const pathname = Astro.url.pathname;
+const panelId = "site-header-panel";
+---
+
+<header class="site-header">
+	{/* Native .container — scoped CSS does not land on child-component roots */}
+	<div class="container site-header__bar">
+		<a class="site-header__logo" href="/" aria-label="The Square Peg Agency – home">
+			{/* Plain SVG <img> — Astro Image was rasterising/cropping the wordmark */}
+			<img
+				src={logoColor}
+				alt="The Square Peg Agency"
+				class="site-header__logo-img"
+				width="232"
+				height="60"
+				decoding="async"
+			/>
+		</a>
+
+		<div class="site-header__desktop">
+			<nav class="site-header__nav" aria-label="Main">
+				<ul class="site-header__list">
+					{
+						mainNav.map((item) => {
+							const active = isActive(pathname, item.href);
+							return (
+								<li>
+									<a
+										href={item.href}
+										class:list={["site-header__link", active && "is-active"]}
+										aria-current={active ? "page" : undefined}
+									>
+										{item.label}
+									</a>
+								</li>
+							);
+						})
+					}
+				</ul>
+			</nav>
+			<Button
+				class="site-header__cta"
+				variant="dark"
+				size="sm"
+				href={headerCta.href}
+				arrow={false}
+			>
+				{headerCta.label}
+			</Button>
+		</div>
+
+		<span class="site-header__toggle-wrap">
+			<button
+				type="button"
+				class="site-header__toggle"
+				id="site-header-toggle"
+				aria-label="Open menu"
+				aria-expanded="false"
+				aria-controls={panelId}
+			>
+				<span class="site-header__toggle-bars" aria-hidden="true">
+					<span></span>
+					<span></span>
+					<span></span>
+				</span>
+			</button>
+		</span>
+	</div>
+
+	<div
+		class="site-header__panel"
+		id={panelId}
+		aria-hidden="true"
+		inert
+	>
+		<div class="site-header__panel-clip">
+			<div class="site-header__panel-inner">
+				<div class="site-header__panel-deco site-header__panel-deco--royal" aria-hidden="true"></div>
+				<div class="site-header__panel-deco site-header__panel-deco--red" aria-hidden="true"></div>
+				<div class="site-header__panel-deco site-header__panel-deco--triangle" aria-hidden="true"></div>
+
+				<nav class="site-header__panel-nav" aria-label="Mobile">
+					<ul class="site-header__panel-list">
+						{
+							mainNav.map((item) => {
+								const active = isActive(pathname, item.href);
+								return (
+									<li>
+										<a
+											href={item.href}
+											class:list={["site-header__panel-link", active && "is-active"]}
+											aria-current={active ? "page" : undefined}
+										>
+											<svg
+												class="site-header__panel-slash"
+												width="14"
+												height="18"
+												viewBox="0 0 14 18"
+												fill="none"
+												xmlns="http://www.w3.org/2000/svg"
+												aria-hidden="true"
+												focusable="false"
+											>
+												<path
+													d="M4 16 L10 2"
+													stroke="var(--color-red)"
+													stroke-width="3"
+													stroke-linecap="round"
+												/>
+											</svg>
+											{item.label}
+										</a>
+									</li>
+								);
+							})
+						}
+					</ul>
+					<div class="site-header__panel-cta">
+						<Button class="site-header__panel-btn" variant="primary" href={headerCta.href}>
+							{headerCta.label}
+						</Button>
+					</div>
+				</nav>
+			</div>
+		</div>
+	</div>
+</header>
+
+{/* Without JS: show the panel on small screens so nav stays reachable */}
+<noscript>
+	<style>
+		.site-header__toggle-wrap {
+			display: none !important;
+		}
+		@media (max-width: 1023px) {
+			.site-header__panel {
+				position: fixed !important;
+				inset: 0 !important;
+				grid-template-rows: 1fr !important;
+				opacity: 1 !important;
+				visibility: visible !important;
+				pointer-events: auto !important;
+			}
+		}
+	</style>
+</noscript>
+
+<script>
+	function initHeaderMenu() {
+		const toggle = document.getElementById("site-header-toggle");
+		const panel = document.getElementById("site-header-panel");
+		if (!(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement)) return;
+		if (toggle.dataset.menuBound === "true") return;
+		toggle.dataset.menuBound = "true";
+
+		const mq = window.matchMedia("(min-width: 1024px)");
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		let lockedScrollY = 0;
+
+		const syncChromeHeight = () => {
+			const chrome = document.getElementById("site-chrome");
+			if (chrome) {
+				document.documentElement.style.setProperty(
+					"--site-chrome-height",
+					`${chrome.getBoundingClientRect().height}px`,
+				);
+			}
+		};
+
+		const setOpen = (open: boolean) => {
+			toggle.setAttribute("aria-expanded", open ? "true" : "false");
+			toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+			panel.classList.toggle("is-open", open);
+			panel.setAttribute("aria-hidden", open ? "false" : "true");
+
+			if (open) {
+				syncChromeHeight();
+				lockedScrollY = window.scrollY;
+				document.body.style.top = `-${lockedScrollY}px`;
+				document.body.classList.add("is-menu-open");
+				panel.removeAttribute("inert");
+				const focusDelay = reduceMotion.matches ? 0 : 320;
+				window.setTimeout(() => {
+					panel.querySelector<HTMLElement>(".site-header__panel-link")?.focus();
+				}, focusDelay);
+			} else {
+				document.body.classList.remove("is-menu-open");
+				document.body.style.top = "";
+				window.scrollTo(0, lockedScrollY);
+				panel.setAttribute("inert", "");
+			}
+		};
+
+		window.addEventListener("resize", () => {
+			if (panel.classList.contains("is-open")) syncChromeHeight();
+		});
+
+		const close = () => {
+			if (toggle.getAttribute("aria-expanded") === "true") {
+				setOpen(false);
+				toggle.focus();
+			}
+		};
+
+		toggle.addEventListener("click", () => {
+			const open = toggle.getAttribute("aria-expanded") !== "true";
+			setOpen(open);
+		});
+
+		panel.addEventListener("click", (event) => {
+			const target = event.target;
+			if (target instanceof Element && target.closest("a")) {
+				setOpen(false);
+			}
+		});
+
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape") close();
+		});
+
+		const onViewportChange = () => {
+			if (mq.matches) close();
+		};
+		mq.addEventListener("change", onViewportChange);
+	}
+
+	initHeaderMenu();
+	document.addEventListener("astro:page-load", initHeaderMenu);
+</script>
+
+<style is:global>
+	/*
+	  Lock scroll without removing the scrollbar (avoids layout shift).
+	  position:fixed freezes the page; top offsets keep the scroll position.
+	*/
+	body.is-menu-open {
+		position: fixed;
+		inset: 0 auto 0 0;
+		width: 100%;
+		overflow-y: scroll;
+	}
+</style>
+
+<style>
+	.site-header {
+		background: var(--color-white);
+		position: relative;
+		z-index: 40;
+	}
+
+	.site-header__bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px 32px;
+		padding-block: 11px;
+		padding-inline: var(--gutter);
+		transition: padding-block 0.45s ease;
+	}
+
+	.site-header__logo {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		flex-shrink: 0;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.site-header__logo-img {
+		display: block;
+		height: 60px;
+		width: auto;
+		transition: height 0.45s ease;
+	}
+
+	@media (max-width: 639px) {
+		.site-header__logo-img {
+			height: 48px;
+		}
+	}
+
+	/* Compact logo + bar while sticky / scrolled */
+	:global(.site-chrome.is-scrolled) .site-header__bar {
+		padding-block: 8px;
+	}
+
+	:global(.site-chrome.is-scrolled) .site-header__logo-img {
+		height: 42px;
+	}
+
+	@media (max-width: 639px) {
+		:global(.site-chrome.is-scrolled) .site-header__logo-img {
+			height: 36px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header__bar,
+		.site-header__logo-img {
+			transition: none;
+		}
+	}
+
+	.site-header__desktop {
+		display: none;
+		align-items: center;
+		gap: 12px 28px;
+	}
+
+	/* Compact navy CTA — closer to the mock parallelogram */
+	.site-header__desktop :global(.site-header__cta.btn-wrap--sm) {
+		--slant: 10px;
+	}
+
+	.site-header__desktop :global(.site-header__cta .btn--sm) {
+		--slant: 10px;
+		min-height: 44px;
+		padding: 0 26px;
+		font-size: 0.875rem;
+		letter-spacing: 0.06em;
+	}
+
+	.site-header__nav {
+		display: flex;
+	}
+
+	.site-header__list {
+		display: flex;
+		align-items: center;
+		gap: 26px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-header__link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font-family: var(--font-body);
+		font-size: 1rem; /* 16px */
+		font-weight: 600;
+		line-height: 1.4;
+		color: var(--color-navy);
+		text-decoration: none;
+		transition: color 0.15s ease;
+	}
+
+	.site-header__link:hover {
+		color: var(--color-red);
+	}
+
+	.site-header__link.is-active {
+		color: var(--color-red);
+	}
+
+	.site-header__toggle-wrap {
+		display: inline-flex;
+		flex-shrink: 0;
+	}
+
+	.site-header__toggle {
+		--slant: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: 44px;
+		padding: 0;
+		background: var(--color-navy);
+		color: var(--color-white);
+		border: none;
+		border-radius: 0;
+		cursor: pointer;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.site-header__toggle:focus,
+	.site-header__toggle:focus-visible {
+		outline: none;
+	}
+
+	.site-header__toggle-bars {
+		position: relative;
+		display: block;
+		width: 18px;
+		height: 12px;
+	}
+
+	.site-header__toggle-bars span {
+		position: absolute;
+		left: 0;
+		display: block;
+		width: 100%;
+		height: 2px;
+		background: var(--color-white);
+		border-radius: 0;
+		transition: transform 0.25s ease, opacity 0.2s ease, top 0.25s ease;
+	}
+
+	.site-header__toggle-bars span:nth-child(1) {
+		top: 0;
+	}
+
+	.site-header__toggle-bars span:nth-child(2) {
+		top: 5px;
+	}
+
+	.site-header__toggle-bars span:nth-child(3) {
+		top: 10px;
+	}
+
+	.site-header__toggle[aria-expanded="true"] .site-header__toggle-bars span:nth-child(1) {
+		top: 5px;
+		transform: rotate(45deg);
+	}
+
+	.site-header__toggle[aria-expanded="true"] .site-header__toggle-bars span:nth-child(2) {
+		opacity: 0;
+	}
+
+	.site-header__toggle[aria-expanded="true"] .site-header__toggle-bars span:nth-child(3) {
+		top: 5px;
+		transform: rotate(-45deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header__toggle-bars span {
+			transition: none;
+		}
+	}
+
+	/* Full-viewport overlay below the sticky chrome (toggle stays usable) */
+	.site-header__panel {
+		position: fixed;
+		top: var(--site-chrome-height, 8rem);
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 45;
+		display: grid;
+		grid-template-rows: 0fr;
+		width: 100%;
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			grid-template-rows 0.45s ease,
+			opacity 0.35s ease,
+			visibility 0s linear 0.45s;
+	}
+
+	.site-header__panel.is-open {
+		grid-template-rows: 1fr;
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transition:
+			grid-template-rows 0.45s ease,
+			opacity 0.3s ease 0.05s,
+			visibility 0s linear 0s;
+	}
+
+	.site-header__panel-clip {
+		overflow: hidden;
+		min-height: 0;
+		height: 100%;
+	}
+
+	.site-header__panel-inner {
+		position: relative;
+		box-sizing: border-box;
+		min-height: 100%;
+		height: 100%;
+		background: var(--color-navy);
+		color: var(--color-white);
+		display: flex;
+		flex-direction: column;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header__panel,
+		.site-header__panel.is-open {
+			transition: none;
+		}
+	}
+
+	.site-header__panel-deco {
+		position: absolute;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.site-header__panel-deco--royal {
+		right: 72px;
+		bottom: -40px;
+		width: 28px;
+		height: 220px;
+		background: var(--color-royal);
+		transform: skewX(-28deg) rotate(18deg);
+		opacity: 0.85;
+	}
+
+	.site-header__panel-deco--red {
+		right: 40px;
+		bottom: -50px;
+		width: 22px;
+		height: 240px;
+		background: var(--color-red);
+		transform: skewX(-28deg) rotate(18deg);
+	}
+
+	.site-header__panel-deco--triangle {
+		right: 0;
+		bottom: 0;
+		width: 140px;
+		height: 140px;
+		background: var(--color-red);
+		clip-path: polygon(100% 70%, 100% 100%, 75% 100%);
+	}
+
+	.site-header__panel-nav {
+		position: relative;
+		z-index: 1;
+		flex: 1;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 24px 24px 48px;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.site-header__panel-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-header__panel-list > li + li {
+		border-top: 1px solid rgb(255 255 255 / 0.14);
+	}
+
+	.site-header__panel-link {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		min-height: 56px;
+		font-family: var(--font-heading);
+		font-size: 1.75rem;
+		font-weight: 500;
+		line-height: 1.1;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--color-white);
+	}
+
+	.site-header__panel-link.is-active {
+		color: var(--color-red-on-navy);
+	}
+
+	.site-header__panel-slash {
+		flex-shrink: 0;
+	}
+
+	.site-header__panel-cta {
+		margin-top: 28px;
+	}
+
+	.site-header__panel-cta :global(.btn-wrap) {
+		display: flex;
+		width: 100%;
+	}
+
+	.site-header__panel-cta :global(.btn) {
+		width: 100%;
+		justify-content: center;
+	}
+
+	@media (min-width: 1024px) {
+		.site-header__desktop {
+			display: flex;
+		}
+
+		.site-header__toggle-wrap,
+		.site-header__panel {
+			display: none !important;
+			grid-template-rows: 0fr;
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+</style>

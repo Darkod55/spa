@@ -1,0 +1,319 @@
+---
+interface Props {
+	variant?: "primary" | "light" | "dark" | "outline-light" | "text";
+	size?: "sm" | "md" | "lg";
+	arrow?: boolean;
+	href?: string;
+	/** Open the link in a new tab (`target="_blank"` + `rel="noopener noreferrer"`). */
+	newTab?: boolean;
+	type?: "button" | "submit" | "reset";
+	class?: string;
+}
+
+const {
+	variant = "primary",
+	size = "md",
+	arrow = true,
+	href,
+	newTab = false,
+	type = "button",
+	class: className = "",
+} = Astro.props;
+
+const Tag = href ? "a" : "button";
+const isText = variant === "text";
+const linkTarget = href && newTab ? "_blank" : undefined;
+const linkRel = href && newTab ? "noopener noreferrer" : undefined;
+---
+
+{
+	isText ? (
+		<Tag
+			class:list={["btn-text", !arrow && "btn-text--no-arrow", className]}
+			href={href}
+			target={linkTarget}
+			rel={linkRel}
+			type={href ? undefined : type}
+		>
+			<span class="btn-text__label"><slot /></span>
+			{arrow && (
+				<svg
+					class="btn-text__arrow"
+					width="20"
+					height="12"
+					viewBox="0 0 20 12"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path d="M0 6 H16" stroke="currentColor" stroke-width="1.8" />
+					<path
+						d="M12 1 L17 6 L12 11"
+						stroke="currentColor"
+						stroke-width="1.8"
+						fill="none"
+						stroke-linejoin="miter"
+					/>
+				</svg>
+			)}
+		</Tag>
+	) : (
+		<span
+			class:list={[
+				"btn-wrap",
+				variant === "outline-light" && "btn-wrap--outline",
+				`btn-wrap--${size}`,
+				className,
+			]}
+		>
+			<Tag
+				class:list={[
+					"btn",
+					`btn--${variant}`,
+					`btn--${size}`,
+					!arrow && "btn--no-arrow",
+					"focus-clip",
+				]}
+				href={href}
+				target={linkTarget}
+				rel={linkRel}
+				type={href ? undefined : type}
+			>
+				<span class="btn__label"><slot /></span>
+				{arrow && (
+					<svg
+						class="btn__arrow"
+						width="20"
+						height="12"
+						viewBox="0 0 20 12"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path d="M0 6 H16" stroke="currentColor" stroke-width="1.8" />
+						<path
+							d="M12 1 L17 6 L12 11"
+							stroke="currentColor"
+							stroke-width="1.8"
+							fill="none"
+							stroke-linejoin="miter"
+						/>
+					</svg>
+				)}
+			</Tag>
+		</span>
+	)
+}
+
+<style>
+	.btn-wrap {
+		display: inline-flex;
+		/* Focus ring sits on the clipped control via .focus-clip */
+	}
+
+	/* Outline variant: white shell + inset fill (clip-path eats real borders) */
+	.btn-wrap--outline {
+		--slant: 14px;
+		background: var(--color-white);
+		padding: 2px;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.btn-wrap--outline.btn-wrap--sm {
+		--slant: 12px;
+	}
+
+	.btn {
+		--slant: 14px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		min-height: 54px;
+		min-width: 44px;
+		padding: 0 34px;
+		border: none;
+		border-radius: 0;
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		line-height: 1;
+		text-transform: uppercase;
+		text-decoration: none;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease,
+			filter 0.15s ease;
+		cursor: pointer;
+	}
+
+	.btn__label {
+		white-space: nowrap;
+		transition: transform 0.2s ease;
+	}
+
+	.btn__arrow {
+		flex-shrink: 0;
+		transition: transform 0.2s ease;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.btn:hover .btn__arrow {
+			transform: translateX(4px);
+		}
+
+		.btn--no-arrow:hover .btn__label {
+			transform: translateY(-2px);
+		}
+	}
+
+	/* Sizes */
+	.btn--sm {
+		--slant: 12px;
+		min-height: 46px;
+		padding: 0 30px;
+		font-size: 0.9375rem;
+	}
+
+	.btn--md {
+		--slant: 14px;
+		min-height: 54px;
+		padding: 0 34px;
+		font-size: 1rem;
+	}
+
+	.btn--lg {
+		--slant: 14px;
+		min-height: 58px;
+		padding: 0 36px;
+		font-size: 1.125rem;
+	}
+
+	/* Variants */
+	.btn--primary {
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	.btn--primary:hover {
+		background: var(--color-red-deep);
+		color: var(--color-white);
+	}
+
+	.btn--light {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.btn--light .btn__arrow {
+		color: var(--color-red);
+	}
+
+	.btn--light:hover {
+		background: var(--color-grey-50);
+		color: var(--color-navy);
+	}
+
+	.btn--dark {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.btn--dark:hover {
+		background: var(--color-royal);
+		color: var(--color-white);
+	}
+
+	.btn--outline-light {
+		/* Fill matches the surface behind the white shell border */
+		background: var(--btn-surface, var(--color-navy));
+		color: var(--color-white);
+		/* Slightly tighter slant so the white shell reads evenly */
+		--slant: 12px;
+	}
+
+	.btn--sm.btn--outline-light {
+		--slant: 10px;
+	}
+
+	.btn--outline-light:hover {
+		background: color-mix(in srgb, var(--btn-surface, var(--color-navy)) 85%, white);
+		color: var(--color-white);
+	}
+
+	/* Text link style */
+	.btn-text {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		min-height: 44px;
+		padding: 4px 0;
+		border: none;
+		border-bottom: 2px solid var(--color-red);
+		border-radius: 0;
+		background: none;
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--color-red);
+		cursor: pointer;
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+
+	.btn-text__label {
+		transition: transform 0.2s ease;
+	}
+
+	.btn-text:hover {
+		color: var(--color-red-deep);
+		border-bottom-color: var(--color-red-deep);
+	}
+
+	.btn-text__arrow {
+		flex-shrink: 0;
+		transition: transform 0.2s ease;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.btn-text:hover .btn-text__arrow {
+			transform: translateX(4px);
+		}
+
+		.btn-text--no-arrow:hover .btn-text__label {
+			transform: translateY(-2px);
+		}
+	}
+
+	/* Parallelogram CTAs go full-bleed on small screens (not text links) */
+	@media (max-width: 639px) {
+		.btn-wrap {
+			display: flex;
+			width: 100%;
+			max-width: 100%;
+			align-self: stretch;
+			box-sizing: border-box;
+		}
+
+		.btn {
+			width: 100%;
+			justify-content: center;
+		}
+	}
+</style>

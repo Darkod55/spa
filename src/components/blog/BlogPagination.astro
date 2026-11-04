@@ -1,0 +1,297 @@
+---
+import { getPaginationRange, type BlogCategory } from "../../utils/blog";
+
+interface Props {
+	page: number;
+	totalPages: number;
+	category?: BlogCategory;
+	class?: string;
+}
+
+const { page, totalPages, class: className = "" } = Astro.props;
+const atStart = page <= 1;
+const atEnd = page >= totalPages;
+const range = getPaginationRange(page, totalPages);
+---
+
+<nav
+	class:list={["blog-pagination", className]}
+	aria-label="Blog pages"
+	data-blog-pagination
+	hidden={totalPages <= 1}
+>
+	<ul class="blog-pagination__list" data-pagination-list>
+		<li>
+			<button
+				type="button"
+				class="blog-pagination__prev"
+				data-page={String(Math.max(1, page - 1))}
+				disabled={atStart}
+				aria-disabled={atStart ? "true" : undefined}
+			>
+				<svg
+					width="16"
+					height="10"
+					viewBox="0 0 20 12"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+				>
+					<path d="M20 6 H4" stroke="currentColor" stroke-width="1.8" />
+					<path
+						d="M8 1 L3 6 L8 11"
+						stroke="currentColor"
+						stroke-width="1.8"
+						fill="none"
+						stroke-linejoin="miter"
+					/>
+				</svg>
+				Prev
+			</button>
+		</li>
+		{
+			range.map((item) =>
+				item === "ellipsis" ? (
+					<li aria-hidden="true">
+						<span class="blog-pagination__ellipsis">…</span>
+					</li>
+				) : item === page ? (
+					<li>
+						<button
+							type="button"
+							class="blog-pagination__page blog-pagination__page--active"
+							data-page={String(item)}
+							aria-current="page"
+						>
+							{item}
+						</button>
+					</li>
+				) : (
+					<li>
+						<span class="blog-pagination__shell">
+							<button
+								type="button"
+								class="blog-pagination__page"
+								data-page={String(item)}
+							>
+								{item}
+							</button>
+						</span>
+					</li>
+				),
+			)
+		}
+		<li>
+			<button
+				type="button"
+				class="blog-pagination__next"
+				data-page={String(Math.min(totalPages, page + 1))}
+				disabled={atEnd}
+				aria-disabled={atEnd ? "true" : undefined}
+			>
+				Next
+				<svg
+					width="16"
+					height="10"
+					viewBox="0 0 20 12"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+				>
+					<path d="M0 6 H16" stroke="currentColor" stroke-width="1.8" />
+					<path
+						d="M12 1 L17 6 L12 11"
+						stroke="currentColor"
+						stroke-width="1.8"
+						fill="none"
+						stroke-linejoin="miter"
+					/>
+				</svg>
+			</button>
+		</li>
+	</ul>
+</nav>
+
+<style>
+	.blog-pagination__list {
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.blog-pagination__list > li {
+		display: flex;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* :global so JS-rebuilt controls keep the same look */
+	.blog-pagination :global(.blog-pagination__shell) {
+		--slant: 8px;
+		display: flex;
+		background: var(--color-grey-200);
+		padding: 1px;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition: background-color 0.15s ease;
+	}
+
+	.blog-pagination :global(.blog-pagination__shell:hover),
+	.blog-pagination :global(.blog-pagination__shell:focus-within) {
+		background: var(--color-navy);
+	}
+
+	.blog-pagination :global(.blog-pagination__page),
+	.blog-pagination :global(.blog-pagination__prev),
+	.blog-pagination :global(.blog-pagination__next) {
+		--slant: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		min-height: 44px;
+		padding: 0 18px;
+		border: none;
+		font-family: var(--font-heading);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		line-height: 1;
+		text-transform: uppercase;
+		cursor: pointer;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.blog-pagination :global(.blog-pagination__page) {
+		--slant: 7px;
+		min-width: 42px;
+		padding: 0 14px;
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.blog-pagination :global(.blog-pagination__shell:hover .blog-pagination__page),
+	.blog-pagination :global(.blog-pagination__shell:focus-within .blog-pagination__page),
+	.blog-pagination :global(.blog-pagination__page:hover),
+	.blog-pagination :global(.blog-pagination__page:focus-visible) {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.blog-pagination :global(.blog-pagination__page--active),
+	.blog-pagination :global(.blog-pagination__page--active:hover),
+	.blog-pagination :global(.blog-pagination__page--active:focus-visible) {
+		--slant: 8px;
+		min-width: 44px;
+		background: var(--color-navy);
+		color: var(--color-white);
+		cursor: default;
+	}
+
+	.blog-pagination :global(.blog-pagination__ellipsis) {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 28px;
+		min-height: 44px;
+		font-family: var(--font-heading);
+		font-size: 1.125rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		color: var(--color-text-body);
+		user-select: none;
+	}
+
+	.blog-pagination :global(.blog-pagination__prev) {
+		background: var(--color-royal);
+		color: var(--color-white);
+		padding-inline: 22px;
+	}
+
+	.blog-pagination :global(.blog-pagination__prev:hover:not(:disabled)),
+	.blog-pagination :global(.blog-pagination__prev:focus-visible:not(:disabled)) {
+		background: var(--color-navy);
+	}
+
+	.blog-pagination :global(.blog-pagination__next) {
+		background: var(--color-red);
+		color: var(--color-white);
+		padding-inline: 22px;
+	}
+
+	.blog-pagination :global(.blog-pagination__next:hover:not(:disabled)),
+	.blog-pagination :global(.blog-pagination__next:focus-visible:not(:disabled)) {
+		background: var(--color-red-deep);
+	}
+
+	.blog-pagination :global(.blog-pagination__prev:disabled),
+	.blog-pagination :global(.blog-pagination__next:disabled) {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	@media (max-width: 639px) {
+		.blog-pagination {
+			width: 100%;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+		}
+
+		.blog-pagination::-webkit-scrollbar {
+			display: none;
+		}
+
+		.blog-pagination__list {
+			gap: 6px;
+			width: max-content;
+			margin-inline: auto;
+			min-width: 100%;
+			justify-content: center;
+		}
+
+		.blog-pagination :global(.blog-pagination__page),
+		.blog-pagination :global(.blog-pagination__prev),
+		.blog-pagination :global(.blog-pagination__next) {
+			min-height: 40px;
+			font-size: 0.8125rem;
+		}
+
+		.blog-pagination :global(.blog-pagination__page) {
+			min-width: 36px;
+			padding: 0 10px;
+		}
+
+		.blog-pagination :global(.blog-pagination__page--active) {
+			min-width: 38px;
+		}
+
+		.blog-pagination :global(.blog-pagination__prev),
+		.blog-pagination :global(.blog-pagination__next) {
+			padding-inline: 14px;
+			gap: 6px;
+		}
+
+		.blog-pagination :global(.blog-pagination__ellipsis) {
+			min-width: 18px;
+			min-height: 40px;
+		}
+	}
+</style>

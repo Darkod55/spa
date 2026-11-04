@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import ContactSection from "../components/sections/contact/ContactSection.astro";
+import { contactHero, contactMeta } from "../content/contact";
+---
+
+<BaseLayout title={contactMeta.title} description={contactMeta.description}>
+	<Hero {...contactHero} />
+	<ContactSection />
+</BaseLayout>

@@ -1,0 +1,125 @@
+---
+interface Props {
+	variant?: "red" | "navy" | "white";
+	size?: "default" | "small" | "sm";
+	/** Pill visible on load; letters stagger in (honours reduced motion). */
+	animate?: boolean;
+	class?: string;
+	as?: "span" | "div" | "p";
+}
+
+const {
+	variant = "red",
+	size: sizeProp = "default",
+	animate = false,
+	class: className = "",
+	as: Tag = "span",
+} = Astro.props;
+
+const size = sizeProp === "sm" ? "small" : sizeProp;
+
+const slotHtml = await Astro.slots.render("default");
+const plainText = slotHtml.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+const chars = animate ? Array.from(plainText) : null;
+---
+
+<Tag
+	class:list={[
+		"label",
+		`label--${variant}`,
+		`label--${size}`,
+		animate && "label--animate",
+		className,
+	]}
+>
+	{
+		chars ? (
+			<span class="label__text" aria-label={plainText}>
+				{chars.map((ch, i) => (
+					<span
+						class="label__char"
+						style={`--i: ${i}`}
+						aria-hidden="true"
+					>
+						{ch === " " ? "\u00A0" : ch}
+					</span>
+				))}
+			</span>
+		) : (
+			<span class="label__text" set:html={slotHtml} />
+		)
+	}
+</Tag>
+
+<style>
+	.label {
+		--slant: 12px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		text-transform: uppercase;
+		line-height: 1.2;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		white-space: nowrap;
+	}
+
+	.label__text {
+		display: inline-block;
+	}
+
+	.label__char {
+		display: inline-block;
+	}
+
+	.label--default {
+		--slant: 12px;
+		padding: 8px 26px;
+		font-size: 1rem;
+		letter-spacing: 0.12em;
+	}
+
+	.label--small {
+		--slant: 10px;
+		padding: 5px 18px;
+		font-size: 0.8125rem;
+		letter-spacing: 0.1em;
+	}
+
+	.label--red {
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	.label--navy {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.label--white {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.label--animate .label__char {
+			opacity: 0;
+			transform: translateY(0.35em);
+			animation: label-char-in 0.55s ease-out forwards;
+			animation-delay: calc(0.1s + var(--i) * 0.032s);
+		}
+	}
+
+	@keyframes label-char-in {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>

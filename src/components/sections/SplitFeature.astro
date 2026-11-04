@@ -1,0 +1,195 @@
+---
+import {
+	type SurfaceColor,
+	type SurfaceDivider,
+	isLightSurface,
+	normalizeSurfaceColor,
+	normalizeSurfaceDivider,
+	normalizeTextColor,
+	surfaceClasses,
+} from "../../design/surfaces";
+
+/** @deprecated Use SurfaceColor — kept for older call sites during migration. */
+export type SplitFeatureTone = SurfaceColor | "royal" | "navy" | "red" | "grey";
+
+interface Props {
+	/** Background surface. Prefer primary / secondary / tertiary / white / gray / black. */
+	background?: SurfaceColor | string;
+	/** @deprecated Use `background`. */
+	tone?: SplitFeatureTone;
+	/** Text colour surface class. Defaults from background when omitted. */
+	textColor?: SurfaceColor | string;
+	/** Section edge divider. */
+	divider?: SurfaceDivider | string | boolean;
+	/** @deprecated Use `divider`. */
+	slantTop?: boolean;
+	imageSide?: "right" | "left";
+	class?: string;
+	id?: string;
+}
+
+const {
+	background,
+	tone,
+	textColor,
+	divider,
+	slantTop,
+	imageSide = "right",
+	class: className,
+	id: sectionId,
+} = Astro.props;
+
+const resolvedBackground = normalizeSurfaceColor(background ?? tone, "tertiary");
+const resolvedText = normalizeTextColor(textColor, resolvedBackground);
+const resolvedDivider = normalizeSurfaceDivider(
+	divider ?? (slantTop === undefined ? undefined : slantTop),
+	"slant-top",
+);
+
+const classes = surfaceClasses({
+	background: resolvedBackground,
+	text: resolvedText,
+	divider: resolvedDivider,
+});
+---
+
+<section
+	id={sectionId}
+	class:list={[
+		"split-feature",
+		...classes,
+		`split-feature--image-${imageSide}`,
+		isLightSurface(resolvedBackground) && "split-feature--light",
+		className,
+	]}
+	data-background={resolvedBackground}
+	data-text={resolvedText}
+	data-divider={resolvedDivider}
+>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container split-feature__inner">
+		<div class="split-feature__copy">
+			<slot />
+		</div>
+		<div class="split-feature__media">
+			<slot name="media" />
+		</div>
+	</div>
+</section>
+
+<style>
+	.split-feature {
+		--split-pad-top: 160px;
+		--split-pad-bottom: 104px;
+		--split-gap: 56px 80px;
+		--divider-slant: 64px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.split-feature__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--split-gap);
+		padding-block: var(--split-pad-top) var(--split-pad-bottom);
+	}
+
+	.split-feature--image-left .split-feature__inner {
+		flex-direction: row-reverse;
+	}
+
+	.split-feature__copy {
+		flex: 1.2 1 480px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+	}
+
+	.split-feature__media {
+		flex: 1 1 420px;
+		min-width: 0;
+	}
+
+	.split-feature__copy :global(.split-feature__title) {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2);
+		font-weight: 600;
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: inherit;
+	}
+
+	.split-feature:not(.split-feature--light) :global(.split-feature__title) {
+		color: var(--color-white);
+	}
+
+	.split-feature__copy :global(.split-feature__lead) {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1.125rem;
+		font-weight: 500;
+		line-height: 1.6;
+		color: inherit;
+	}
+
+	.split-feature:not(.split-feature--light) :global(.split-feature__lead) {
+		color: var(--color-white);
+	}
+
+	.split-feature__copy :global(.split-feature__body),
+	.split-feature__copy :global(.split-feature__body p) {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem;
+		font-weight: 400;
+		line-height: 1.75;
+		color: inherit;
+		opacity: 0.92;
+	}
+
+	.split-feature--light :global(.split-feature__body),
+	.split-feature--light :global(.split-feature__body p) {
+		opacity: 1;
+		color: var(--color-text-body);
+	}
+
+	.split-feature__copy :global(.split-feature__body p + p) {
+		margin-block-start: 1em;
+	}
+
+	.split-feature__copy :global(.split-feature__cta) {
+		margin-top: 8px;
+	}
+
+	@media (max-width: 1023px) {
+		.split-feature__inner,
+		.split-feature--image-left .split-feature__inner {
+			flex-direction: column;
+		}
+
+		.split-feature__copy,
+		.split-feature__media {
+			flex-basis: auto;
+			width: 100%;
+		}
+
+		.split-feature__media :global(.banded-image) {
+			max-width: none;
+			width: 100%;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.split-feature {
+			--divider-slant: 40px;
+			--split-pad-top: 120px;
+			--split-pad-bottom: 80px;
+			--split-gap: 40px;
+		}
+	}
+
+</style>

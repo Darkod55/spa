@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import ServicesOverview from "../components/sections/services/ServicesOverview.astro";
+import ServiceBlock from "../components/sections/services/ServiceBlock.astro";
+import CtaSection from "../components/sections/CtaSection.astro";
+import { servicesHero, servicesMeta, servicesCta } from "../content/services";
+import { services } from "../data/services";
+---
+
+<BaseLayout title={servicesMeta.title} description={servicesMeta.description}>
+	<Hero {...servicesHero} />
+	<ServicesOverview />
+	{services.map((service) => <ServiceBlock service={service} />)}
+	<CtaSection {...servicesCta} />
+</BaseLayout>

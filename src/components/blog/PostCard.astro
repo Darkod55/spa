@@ -1,0 +1,203 @@
+---
+import { Image } from "astro:assets";
+import Label from "../ui/Label.astro";
+import {
+	blogPostPath,
+	formatBlogDate,
+	getTeamMember,
+	resolveReadingTime,
+	type BlogPost,
+} from "../../utils/blog";
+
+interface Props {
+	post: BlogPost;
+	showExcerpt?: boolean;
+	/** Listing archive cards show a READ affordance in the meta row. */
+	showRead?: boolean;
+	class?: string;
+}
+
+const {
+	post,
+	showExcerpt = false,
+	showRead = false,
+	class: className = "",
+} = Astro.props;
+const { title, excerpt, category, cover, coverPosition, publishDate, author, readingTime } =
+	post.data;
+const member = getTeamMember(author);
+const href = blogPostPath(post.id);
+const dateLabel = formatBlogDate(publishDate);
+const timeLabel = resolveReadingTime(readingTime, post.body);
+const authorName = member?.name ?? author;
+---
+
+<article class:list={["post-card", showRead && "post-card--listing", className]}>
+	<div class="post-card__media">
+		<Image
+			src={cover}
+			alt=""
+			class="post-card__img"
+			widths={[480, 720, 960]}
+			sizes="(min-width: 1024px) 360px, 100vw"
+			quality={85}
+			loading="lazy"
+			decoding="async"
+			style={`object-position: ${coverPosition}`}
+		/>
+		<div class="post-card__corner" aria-hidden="true"></div>
+		<div class="post-card__label">
+			<Label variant="red" size="sm">{category}</Label>
+		</div>
+	</div>
+	<div class="post-card__body">
+		<h3 class="post-card__title">
+			<a class="post-card__link" href={href}>{title}</a>
+		</h3>
+		{showExcerpt && <p class="post-card__excerpt">{excerpt}</p>}
+		<div class="post-card__footer">
+			<p class="post-card__meta">
+				{authorName} · {dateLabel} · {timeLabel}
+			</p>
+			{
+				showRead && (
+					<span class="post-card__read" aria-hidden="true">
+						Read
+						<svg
+							width="16"
+							height="10"
+							viewBox="0 0 20 12"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path d="M0 6 H16" stroke="currentColor" stroke-width="1.8" />
+							<path
+								d="M12 1 L17 6 L12 11"
+								stroke="currentColor"
+								stroke-width="1.8"
+								fill="none"
+								stroke-linejoin="miter"
+							/>
+						</svg>
+					</span>
+				)
+			}
+		</div>
+	</div>
+</article>
+
+<style>
+	.post-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		background: var(--color-white);
+		box-shadow: inset 0 -5px 0 var(--color-red);
+	}
+
+	.post-card:focus-within {
+		outline: 2px solid var(--color-red);
+		outline-offset: 3px;
+	}
+
+	.post-card__media {
+		position: relative;
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%);
+	}
+
+	.post-card__img,
+	.post-card :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.post-card__corner {
+		position: absolute;
+		inset: 0;
+		background: var(--color-navy);
+		clip-path: polygon(82% 0, 100% 0, 100% 24%);
+		pointer-events: none;
+	}
+
+	.post-card__label {
+		position: absolute;
+		left: 16px;
+		bottom: 28px;
+		z-index: 1;
+	}
+
+	.post-card__body {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		gap: 14px;
+		padding: 12px 28px 32px;
+		min-width: 0;
+	}
+
+	.post-card__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: 1.5rem; /* 24px */
+		line-height: 1.15;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.post-card__link {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.post-card__link::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+
+	.post-card__excerpt {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.875rem;
+		line-height: 1.7;
+		color: var(--color-text-body);
+	}
+
+	.post-card__footer {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px 16px;
+		margin-top: auto;
+		padding-top: 14px;
+		border-top: 1px solid var(--color-grey-200);
+	}
+
+	.post-card__meta {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.75rem; /* 12px */
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		color: var(--color-text-body);
+	}
+
+	.post-card__read {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-family: var(--font-heading);
+		font-size: 0.875rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-red);
+	}
+</style>

@@ -1,0 +1,58 @@
+---
+import BandedImage from "../../ui/BandedImage.astro";
+import SplitFeature from "../SplitFeature.astro";
+import SplitFeatureText from "../SplitFeatureText.astro";
+import { aboutVisible as defaultContent } from "../../../data/about";
+import phoneBoxWestminster from "../../../assets/images/about/phone-box-westminster.jpg";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+	id?: string;
+	title?: string;
+	lead?: string;
+	body?: string[];
+	cta?: { label: string; href: string };
+	image?: ImageMetadata;
+	imageAlt?: string;
+	imagePosition?: string;
+	class?: string;
+}
+
+const {
+	id: sectionId = "more-than-visible",
+	title = defaultContent.title,
+	lead = defaultContent.lead,
+	body = defaultContent.body,
+	cta = defaultContent.cta,
+	image = phoneBoxWestminster,
+	imageAlt = defaultContent.image.alt,
+	imagePosition = defaultContent.image.position,
+	class: className = "",
+} = Astro.props;
+---
+
+<SplitFeature
+	background="tertiary"
+	divider="slant-top"
+	imageSide="left"
+	id={sectionId}
+	class={className}
+>
+	<SplitFeatureText
+		{title}
+		{lead}
+		{body}
+		{cta}
+		showSlash
+		slashColor="var(--color-red-on-navy)"
+		buttonVariant="light"
+	/>
+
+	<BandedImage
+		slot="media"
+		{image}
+		alt={imageAlt}
+		position={imagePosition}
+		corners="tl-bl"
+	/>
+</SplitFeature>

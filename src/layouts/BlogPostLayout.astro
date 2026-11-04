@@ -1,0 +1,448 @@
+---
+import type { MarkdownHeading } from "astro";
+import { Image } from "astro:assets";
+import BaseLayout from "./BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import Label from "../components/ui/Label.astro";
+import Button from "../components/ui/Button.astro";
+import SlashMark from "../components/ui/SlashMark.astro";
+import CtaSection from "../components/sections/CtaSection.astro";
+import PostContents from "../components/blog/PostContents.astro";
+import ShareButtons from "../components/blog/ShareButtons.astro";
+import AuthorBox from "../components/blog/AuthorBox.astro";
+import PostCard from "../components/blog/PostCard.astro";
+import { highlightBraces } from "../utils/highlight";
+import {
+	blogPostPath,
+	formatBlogDate,
+	getTeamMember,
+	getTeamPhoto,
+	resolveReadingTime,
+	type BlogPost,
+} from "../utils/blog";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "../utils/seo";
+import "../styles/post.css";
+
+interface Props {
+	post: BlogPost;
+	headings: MarkdownHeading[];
+	related: BlogPost[];
+}
+
+const { post, headings, related } = Astro.props;
+const {
+	title,
+	highlight,
+	excerpt,
+	category,
+	tags,
+	author,
+	publishDate,
+	updatedDate,
+	cover,
+	coverPosition,
+	readingTime,
+	draft,
+} = post.data;
+
+const member = getTeamMember(author);
+const photo = getTeamPhoto(author);
+const dateLabel = formatBlogDate(publishDate);
+const timeLabel = resolveReadingTime(readingTime, post.body);
+const path = blogPostPath(post.id);
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const pageUrl = absoluteUrl(path, origin);
+const shareImageUrl = absoluteUrl(DEFAULT_OG_IMAGE, origin);
+
+const articleJsonLd = {
+	"@type": "Article",
+	headline: title,
+	description: excerpt,
+	datePublished: publishDate.toISOString(),
+	dateModified: (updatedDate ?? publishDate).toISOString(),
+	author: {
+		"@type": "Person",
+		name: member?.name ?? author,
+	},
+	image: shareImageUrl,
+	mainEntityOfPage: pageUrl,
+};
+
+const relatedTitleHtml = highlightBraces("You might {also like}");
+const initial = (member?.name ?? author).trim().charAt(0).toUpperCase();
+---
+
+<BaseLayout
+	title={title}
+	description={excerpt}
+	canonicalPath={path}
+	ogType="article"
+	robots={draft ? "noindex" : undefined}
+	jsonLd={articleJsonLd}
+>
+	<Hero
+		variant="page"
+		title={title}
+		highlight={highlight}
+		image={cover}
+		imageAlt=""
+		imagePosition={coverPosition}
+		minHeight="560px"
+		titleSize="post"
+		divider={true}
+		dividerTo="white"
+	>
+		<div slot="before-title" class="post-hero__before">
+			<nav class="post-hero__breadcrumb" aria-label="Breadcrumb">
+				<ol class="post-hero__crumbs">
+					<li>
+						<a href="/blog">Blog</a>
+					</li>
+					<li aria-hidden="true" class="post-hero__sep">/</li>
+					<li>
+						<a href={`/blog?category=${encodeURIComponent(category)}`}>
+							{category}
+						</a>
+					</li>
+				</ol>
+			</nav>
+			<Label variant="red" size="sm">{category}</Label>
+		</div>
+
+		<div slot="after-subtitle" class="post-hero__meta">
+			<div class="post-hero__author">
+				<div class="post-hero__avatar" aria-hidden="true">
+					{
+						photo ? (
+							<Image
+								src={photo}
+								alt=""
+								class="post-hero__avatar-img"
+								widths={[48, 96]}
+								sizes="48px"
+								quality={85}
+								loading="eager"
+							/>
+						) : (
+							<span class="post-hero__avatar-initial">{initial}</span>
+						)
+					}
+				</div>
+				<div class="post-hero__author-text">
+					<p class="post-hero__author-name">{member?.name ?? author}</p>
+					{
+						member?.role && (
+							<p class="post-hero__author-role">{member.role}</p>
+						)
+					}
+				</div>
+			</div>
+			<span class="post-hero__divider" aria-hidden="true"></span>
+			<p class="post-hero__stamp">
+				<time datetime={publishDate.toISOString()}>{dateLabel}</time>
+				{" · "}
+				{timeLabel}
+			</p>
+		</div>
+	</Hero>
+
+	<section class="post-body">
+		{/* Native .container — scoped flex styles miss Container component roots */}
+		<div class="container post-body__inner">
+			<aside class="post-body__aside">
+				<PostContents headings={headings} />
+				<ShareButtons url={pageUrl} title={title} />
+			</aside>
+
+			<article class="post post-body__article">
+				<p class="post__intro">{excerpt}</p>
+				<slot />
+
+				{
+					tags && tags.length > 0 && (
+						<div class="post__tags">
+							<p class="post__tags-label">Tags:</p>
+							{tags.map((tag) => (
+								<a
+									class="post__tag"
+									href={`/blog?tag=${encodeURIComponent(tag)}`}
+								>
+									{tag}
+								</a>
+							))}
+						</div>
+					)
+				}
+
+				<AuthorBox authorSlug={author} />
+			</article>
+		</div>
+	</section>
+
+	{
+		related.length > 0 && (
+			<section class="related-posts">
+				<div class="container">
+					<div class="related-posts__header">
+						<div class="related-posts__heading">
+							<SlashMark class="related-posts__slash" />
+							<h2
+								class="related-posts__title"
+								set:html={relatedTitleHtml}
+							/>
+						</div>
+						<Button variant="dark" href="/blog">All articles</Button>
+					</div>
+					<div class="related-posts__grid">
+						{related.map((item) => (
+							<PostCard post={item} />
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+
+	<CtaSection
+		title="Want to talk about your marketing?"
+		titleSize="md"
+		paragraphs={[
+			"Tell us where you are, what you're trying to achieve and what's getting in the way. We'll help you work out where to start.",
+		]}
+		cta={{ label: "Let's talk", href: "/contact" }}
+	/>
+</BaseLayout>
+
+<style>
+	.post-hero__before {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		width: 100%;
+	}
+
+	.post-hero__breadcrumb {
+		margin: 0;
+	}
+
+	.post-hero__crumbs {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.post-hero__crumbs a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 32px;
+		font-family: var(--font-body);
+		font-size: 0.8125rem; /* 13px */
+		font-weight: 500;
+		color: var(--color-white);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.post-hero__sep {
+		color: var(--color-text-muted-dark);
+		font-size: 0.8125rem;
+	}
+
+	.post-hero__meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px 20px;
+		margin-top: 6px;
+	}
+
+	.post-hero__author {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.post-hero__avatar {
+		--slant: 8px;
+		flex: 0 0 auto;
+		width: 48px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		background: var(--color-white);
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.post-hero__avatar-img,
+	.post-hero__avatar :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.post-hero__avatar-initial {
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: 1.375rem; /* 22px */
+		line-height: 1;
+		color: var(--color-navy);
+	}
+
+	.post-hero__author-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.post-hero__author-name {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 600;
+		color: var(--color-white);
+	}
+
+	.post-hero__author-role {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.8125rem; /* 13px */
+		color: var(--color-text-muted-dark);
+	}
+
+	.post-hero__divider {
+		width: 1px;
+		height: 32px;
+		background: rgb(255 255 255 / 0.25);
+	}
+
+	.post-hero__stamp {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.875rem; /* 14px */
+		font-weight: 500;
+		color: var(--color-text-on-dark);
+	}
+
+	.post-body {
+		background: var(--color-white);
+	}
+
+	.post-body__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 48px 72px;
+		padding-top: 40px;
+		padding-bottom: 112px;
+	}
+
+	.post-body__aside {
+		flex: 1 1 300px;
+		max-width: 360px;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		min-width: 0;
+	}
+
+	.post-body__article {
+		flex: 999 1 560px;
+		min-width: 0;
+		max-width: 780px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.related-posts {
+		position: relative;
+		overflow: hidden;
+		background: var(--color-grey-50);
+		padding: 136px 0 160px;
+		clip-path: polygon(0 56px, 100% 0, 100% 100%, 0 100%);
+	}
+
+	.related-posts__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 20px 48px;
+	}
+
+	.related-posts__heading {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		min-width: 0;
+	}
+
+	.related-posts__slash {
+		width: 56px;
+		height: 20px;
+	}
+
+	.related-posts__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: clamp(2.25rem, 3.6vw, 3.25rem);
+		line-height: 1.05;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.related-posts__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.related-posts__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 24px;
+		margin-top: 40px;
+	}
+
+	@media (min-width: 1024px) {
+		.post-body__aside {
+			position: sticky;
+			top: 24px;
+			align-self: flex-start;
+		}
+	}
+
+	@media (max-width: 1023px) {
+		.post-body__aside,
+		.post-body__article {
+			flex-basis: 100%;
+			max-width: none;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.related-posts {
+			padding: 96px 0 120px;
+			clip-path: polygon(0 32px, 100% 0, 100% 100%, 0 100%);
+		}
+
+		.related-posts__grid {
+			grid-template-columns: 1fr;
+		}
+
+		.post-hero__divider {
+			display: none;
+		}
+	}
+</style>

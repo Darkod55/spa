@@ -1,0 +1,134 @@
+---
+export type SteppedLabelTone = "white" | "navy" | "red" | "royal";
+
+export type SteppedLabelItem = {
+	text: string;
+	tone: SteppedLabelTone;
+};
+
+interface Props {
+	items: readonly SteppedLabelItem[];
+	/** Indent added per item in px (default 22). Halved below 640px. */
+	step?: number;
+	size?: "md" | "lg";
+	/** When true, renders an ordered list (meaningful sequence). */
+	ordered?: boolean;
+	/**
+	 * Surrounding surface — royal labels get a light border on navy
+	 * so they separate from the section background.
+	 */
+	surface?: "light" | "navy";
+	class?: string;
+}
+
+const {
+	items,
+	step = 22,
+	size = "md",
+	ordered = false,
+	surface = "light",
+	class: className = "",
+} = Astro.props;
+
+const Tag = ordered ? "ol" : "ul";
+---
+
+<Tag
+	class:list={[
+		"stepped-labels",
+		`stepped-labels--${size}`,
+		surface === "navy" && "stepped-labels--on-navy",
+		className,
+	]}
+	style={`--stepped-step-base: ${step}px;`}
+>
+	{
+		items.map((item, index) => (
+			<li
+				class:list={[
+					"stepped-labels__item",
+					`stepped-labels__item--${item.tone}`,
+				]}
+				style={`--i: ${index}`}
+			>
+				{item.text}
+			</li>
+		))
+	}
+</Tag>
+
+<style>
+	.stepped-labels {
+		--stepped-step-base: 22px;
+		--stepped-step: var(--stepped-step-base);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.stepped-labels__item {
+		--slant: 12px;
+		box-sizing: border-box;
+		align-self: flex-start;
+		margin: 0;
+		margin-left: calc(var(--i) * var(--stepped-step));
+		max-width: calc(100% - (var(--i) * var(--stepped-step)));
+		font-family: var(--font-heading);
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		line-height: 1.2;
+		text-transform: uppercase;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.stepped-labels--md .stepped-labels__item {
+		padding: 8px 26px;
+		font-size: 1.0625rem; /* 17px */
+	}
+
+	.stepped-labels--lg .stepped-labels__item {
+		padding: 10px 28px;
+		font-size: 1.125rem; /* 18px */
+	}
+
+	.stepped-labels__item--white {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.stepped-labels__item--navy {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.stepped-labels__item--red {
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	.stepped-labels__item--royal {
+		background: var(--color-royal);
+		color: var(--color-white);
+	}
+
+	.stepped-labels--on-navy .stepped-labels__item--royal {
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+	}
+
+	@media (max-width: 639px) {
+		.stepped-labels {
+			--stepped-step: calc(var(--stepped-step-base) / 2);
+		}
+	}
+</style>

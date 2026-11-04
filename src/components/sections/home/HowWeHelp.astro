@@ -1,0 +1,291 @@
+---
+import Button from "../../ui/Button.astro";
+import SlashMark from "../../ui/SlashMark.astro";
+import SteppedLabels, {
+	type SteppedLabelItem,
+	type SteppedLabelTone,
+} from "../../ui/SteppedLabels.astro";
+import NumberedStrips, {
+	type NumberedStripItem,
+} from "../../ui/NumberedStrips.astro";
+import {
+	howWeHelp as defaultContent,
+	type HowWeHelpService,
+} from "../../../data/home";
+import { highlightBraces } from "../../../utils/highlight";
+import { slugify } from "../../../utils/text";
+
+function isNavItem(
+	item: HowWeHelpService,
+): item is { id: string; title: string } {
+	return typeof item === "object" && item !== null && "id" in item && "title" in item;
+}
+
+interface Props {
+	id?: string;
+	title?: string;
+	intro?: string;
+	steps?: string[];
+	outro?: string;
+	cta?: { label: string; href: string };
+	servicesLabel?: string;
+	services?: HowWeHelpService[];
+	class?: string;
+}
+
+const {
+	id: sectionId = "how-we-help",
+	title = defaultContent.title,
+	intro = defaultContent.intro,
+	steps = defaultContent.steps,
+	outro = defaultContent.outro,
+	cta = defaultContent.cta,
+	servicesLabel = defaultContent.servicesLabel,
+	services = defaultContent.services,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+
+const stepTones: SteppedLabelTone[] = ["white", "red", "royal"];
+const stepItems: SteppedLabelItem[] = steps.map((text, index) => ({
+	text,
+	tone: stepTones[index] ?? "navy",
+}));
+
+function serviceLabel(item: HowWeHelpService): string {
+	if (typeof item === "string") return item;
+	if (isNavItem(item)) return item.title;
+	return item.label;
+}
+
+function serviceHref(item: HowWeHelpService): string {
+	if (typeof item !== "string" && "href" in item && item.href) return item.href;
+	if (isNavItem(item)) return `/services#${item.id}`;
+	return `/services#${slugify(serviceLabel(item))}`;
+}
+
+const serviceItems: NumberedStripItem[] = services.map((item) => ({
+	text: serviceLabel(item),
+	href: serviceHref(item),
+}));
+---
+
+<section class:list={["how-we-help", className]} id={sectionId}>
+	<div class="how-we-help__deco" aria-hidden="true">
+		<div class="how-we-help__panel"></div>
+		<div class="how-we-help__stripe"></div>
+	</div>
+
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container how-we-help__inner">
+		<div class="how-we-help__main">
+			<div class="how-we-help__copy">
+				<SlashMark color="var(--color-red-on-navy)" />
+				<h2 class="how-we-help__title" set:html={titleHtml} />
+				<p class="how-we-help__intro">{intro}</p>
+				<SteppedLabels
+					items={stepItems}
+					step={96}
+					size="lg"
+					ordered
+					surface="navy"
+				/>
+			</div>
+
+			<div class="how-we-help__services">
+				<p class="how-we-help__services-label">{servicesLabel}</p>
+				<NumberedStrips
+					items={serviceItems}
+					tone="light"
+					columns={2}
+					size="md"
+				/>
+			</div>
+		</div>
+
+		<div class="how-we-help__footer">
+			<p class="how-we-help__outro">{outro}</p>
+			<div class="how-we-help__cta">
+				<Button variant="primary" href={cta.href}>{cta.label}</Button>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.how-we-help {
+		--how-help-slant: var(--space-overlap);
+		--how-help-pad-top: 208px;
+		--how-help-pad-bottom: 112px;
+		position: relative;
+		overflow: hidden;
+		margin-top: calc(var(--how-help-slant) * -1);
+		background: var(--color-navy);
+		color: var(--color-white);
+		clip-path: polygon(
+			0 0,
+			100% var(--how-help-slant),
+			100% 100%,
+			0 100%
+		);
+	}
+
+	.how-we-help__deco {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.how-we-help__panel {
+		position: absolute;
+		inset: 0;
+		background: var(--color-royal);
+		clip-path: polygon(70% 0, 100% 0, 100% 100%, 45% 100%);
+	}
+
+	.how-we-help__stripe {
+		position: absolute;
+		inset: 0;
+		background: var(--color-red);
+		clip-path: polygon(68.5% 0, 70% 0, 45% 100%, 43.5% 100%);
+	}
+
+	.how-we-help__inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 48px;
+		padding-block: var(--how-help-pad-top) var(--how-help-pad-bottom);
+	}
+
+	.how-we-help__main {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 48px 72px;
+	}
+
+	.how-we-help__copy {
+		flex: 1 1 380px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+	}
+
+	.how-we-help__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2-lg);
+		font-weight: 600;
+		line-height: 0.98;
+		text-transform: uppercase;
+		color: var(--color-white);
+	}
+
+	.how-we-help__title :global(.hl) {
+		color: var(--color-red-on-navy);
+	}
+
+	.how-we-help__intro {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-on-dark);
+	}
+
+	.how-we-help__footer {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 24px 48px;
+		width: 100%;
+	}
+
+	.how-we-help__outro {
+		flex: 0 1 50%;
+		margin: 0;
+		max-width: 50%;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-on-dark);
+	}
+
+	.how-we-help__cta {
+		flex: 0 0 auto;
+		margin-inline-start: auto;
+	}
+
+	.how-we-help__services {
+		flex: 1.2 1 460px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.how-we-help__services-label {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-on-dark);
+	}
+
+	@media (max-width: 1023px) {
+		.how-we-help__main {
+			flex-direction: column;
+		}
+
+		.how-we-help__copy,
+		.how-we-help__services {
+			flex-basis: auto;
+			width: 100%;
+		}
+
+		/* Keep deco off the copy — corner triangle only */
+		.how-we-help__panel {
+			clip-path: polygon(100% 55%, 100% 100%, 60% 100%);
+		}
+
+		.how-we-help__stripe {
+			display: none;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.how-we-help {
+			--how-help-slant: var(--space-overlap-sm);
+			--how-help-pad-top: 120px;
+			--how-help-pad-bottom: 80px;
+		}
+
+		.how-we-help__inner {
+			gap: var(--gap-md);
+		}
+
+		.how-we-help__footer {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.how-we-help__outro {
+			flex-basis: auto;
+			max-width: none;
+		}
+
+		.how-we-help__cta {
+			margin-inline-start: 0;
+		}
+	}
+</style>

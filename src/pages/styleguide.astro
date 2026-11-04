@@ -1,0 +1,984 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+import Label from "../components/ui/Label.astro";
+import NumberTab from "../components/ui/NumberTab.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import SlashMark from "../components/ui/SlashMark.astro";
+import SlashList from "../components/ui/SlashList.astro";
+import Hero from "../components/sections/Hero.astro";
+import BrandMark from "../components/ui/BrandMark.astro";
+import SquarePegGraphic from "../components/sections/SquarePegGraphic.astro";
+import IntroStatement from "../components/sections/home/IntroStatement.astro";
+import BandedImage from "../components/ui/BandedImage.astro";
+import SplitFeature from "../components/sections/SplitFeature.astro";
+import BetterUnderstanding from "../components/sections/home/BetterUnderstanding.astro";
+import Beliefs from "../components/sections/home/Beliefs.astro";
+import BeliefCard from "../components/ui/BeliefCard.astro";
+import SteppedLabels from "../components/ui/SteppedLabels.astro";
+import NumberedStrips from "../components/ui/NumberedStrips.astro";
+import AboutIntro from "../components/sections/about/AboutIntro.astro";
+import Team from "../components/sections/about/Team.astro";
+import TeamCard from "../components/ui/TeamCard.astro";
+import WhySpa from "../components/sections/about/WhySpa.astro";
+import HowWeHelp from "../components/sections/home/HowWeHelp.astro";
+import CtaSection from "../components/sections/CtaSection.astro";
+import ServiceBlock from "../components/sections/services/ServiceBlock.astro";
+import type { ServiceItem } from "../data/services";
+import { services as liveServices } from "../data/services";
+import towerBridge from "../assets/images/hero/tower-bridge.jpg";
+
+const serviceBlockDemos: ServiceItem[] = (() => {
+	const base = liveServices[0];
+	if (!base) return [];
+	return [
+		base,
+		{
+			...base,
+			id: "sg-white",
+			number: "02",
+			title: "Brand strategy",
+			tone: "white",
+			reverse: true,
+			slant: "down",
+			bands: "none",
+		},
+		{
+			...base,
+			id: "sg-royal",
+			number: "03",
+			title: "Digital marketing",
+			tone: "royal",
+			reverse: false,
+			slant: "up",
+			bands: "right",
+		},
+		{
+			...base,
+			id: "sg-navy",
+			number: "04",
+			title: "Ongoing support",
+			tone: "navy",
+			reverse: true,
+			slant: "down",
+			bands: "left",
+		},
+	];
+})();
+
+import londonEye from "../assets/images/hero/london-eye.jpg";
+import westminsterBw from "../assets/images/hero/westminster-bw.jpg";
+import phoneBoxRain from "../assets/images/hero/phone-box-rain.jpg";
+import phoneBoxWestminster from "../assets/images/hero/phone-box-westminster.jpg";
+import homeWestminster from "../assets/images/home/westminster-bw.jpg";
+
+const brandColors = [
+	{ name: "--color-navy", hex: "#031433", varName: "var(--color-navy)" },
+	{ name: "--color-royal", hex: "#012169", varName: "var(--color-royal)" },
+	{ name: "--color-red", hex: "#C8102E", varName: "var(--color-red)" },
+	{ name: "--color-red-deep", hex: "#970C23", varName: "var(--color-red-deep)" },
+	{ name: "--color-white", hex: "#FFFFFF", varName: "var(--color-white)", border: true },
+];
+
+const tintColors = [
+	{ name: "--color-red-on-navy", hex: "#E8324C", varName: "var(--color-red-on-navy)" },
+	{ name: "--color-red-on-royal", hex: "#FF8A9A", varName: "var(--color-red-on-royal)" },
+];
+
+const neutrals = [
+	{ name: "--color-grey-50", hex: "#F4F5F7", varName: "var(--color-grey-50)", border: true },
+	{ name: "--color-grey-100", hex: "#E8EBF0", varName: "var(--color-grey-100)", border: true },
+	{ name: "--color-grey-200", hex: "#E3E6EC", varName: "var(--color-grey-200)", border: true },
+	{ name: "--color-grey-400", hex: "#9AA3B5", varName: "var(--color-grey-400)" },
+];
+
+const textColors = [
+	{ name: "--color-text", hex: "#031433", varName: "var(--color-text)" },
+	{ name: "--color-text-body", hex: "#3A4560", varName: "var(--color-text-body)" },
+	{ name: "--color-text-on-dark", hex: "#D2D8E3", varName: "var(--color-text-on-dark)" },
+	{ name: "--color-text-on-royal", hex: "#D6DCE8", varName: "var(--color-text-on-royal)" },
+	{ name: "--color-text-muted-dark", hex: "#AEB7C7", varName: "var(--color-text-muted-dark)" },
+	{ name: "--color-text-on-red", hex: "#FBE7EA", varName: "var(--color-text-on-red)" },
+];
+
+const typeSamples = [
+	{ className: "type-display", label: "Display / hero H1", sample: "Square pegs" },
+	{ className: "type-h1-page", label: "Page H1", sample: "About the agency" },
+	{ className: "type-cta", label: "CTA heading", sample: "Ready to talk?" },
+	{ className: "type-h2", label: "Section H2", sample: "What we deliver" },
+	{ className: "type-h2-lg", label: "Large section H2", sample: "Our approach" },
+	{ className: "type-statement", label: "Statement", sample: "We find the fit that others miss." },
+	{ className: "type-h3", label: "Card H3", sample: "Brand strategy" },
+	{ className: "type-tagline", label: "Tagline", sample: "Strategy · Design · Build" },
+	{ className: "type-eyebrow", label: "Eyebrow", sample: "Services" },
+	{ className: "type-hero-sub", label: "Hero sub", sample: "Marketing that fits brands that don’t." },
+	{ className: "type-lead", label: "Lead", sample: "We help ambitious brands find clarity, craft and conversion." },
+	{ className: "type-body", label: "Body", sample: "Body copy sits at 15px with a comfortable 1.75 line-height for short marketing sections." },
+	{ className: "type-body-long", label: "Body long-form", sample: "Long-form blog text uses 16px and 1.85 line-height for sustained reading comfort across articles and case studies." },
+	{ className: "type-small", label: "Small", sample: "Supporting detail and footnotes." },
+	{ className: "type-meta", label: "Meta", sample: "12 MAR 2026 · 5 MIN READ" },
+	{ className: "type-nav", label: "Nav", sample: "About" },
+];
+
+const buttonSurfaces = [
+	{
+		key: "light",
+		label: "Light",
+		className: "bg-white",
+		style: "border: 1px solid var(--color-grey-200); --btn-surface: var(--color-white)",
+	},
+	{
+		key: "navy",
+		label: "Navy",
+		className: "bg-navy",
+		style: "--btn-surface: var(--color-navy)",
+	},
+	{
+		key: "royal",
+		label: "Royal",
+		className: "bg-royal",
+		style: "--btn-surface: var(--color-royal)",
+	},
+	{
+		key: "red",
+		label: "Deep red",
+		className: "bg-red-deep",
+		style: "--btn-surface: var(--color-red-deep)",
+	},
+] as const;
+---
+
+<BaseLayout
+	title="Style guide"
+	description="Design system preview for The Square Peg Agency."
+	robots="noindex, nofollow"
+	showAuditBar={true}
+>
+	<header class="sg-header bg-navy">
+		<Container>
+			<p class="type-eyebrow" style="color: var(--color-red-on-navy)">Design system</p>
+			<h1 class="type-h1-page" style="color: var(--color-white); margin-top: 12px">
+				Style guide
+			</h1>
+			<p class="type-hero-sub" style="color: var(--color-text-on-dark); margin-top: 16px; max-width: 40rem">
+				Tokens, type, signature shapes and UI components for The Square Peg Agency.
+				This page is <code>noindex</code>.
+			</p>
+		</Container>
+	</header>
+
+		<!-- Hero variants -->
+		<section class="section bg-white" id="hero">
+			<Container class="stack-md">
+				<SectionHeading>Hero <span class="hl">variants</span></SectionHeading>
+				<p class="type-lead">
+					Home (large) and page (banner) heroes. Photos are placeholders until the final assets are added.
+				</p>
+			</Container>
+		</section>
+
+		<Hero
+			variant="home"
+			background="primary"
+			label="The Square Peg Agency"
+			title="Why fit in when you can stand out?"
+			highlight="stand out?"
+			subtitle="Strategic marketing for organisations in the addiction, mental health, behavioural health and wellness sectors."
+			image={towerBridge}
+			imagePosition="100% 40%"
+			primaryCta={{ label: "Book a discovery call", href: "/contact" }}
+			secondaryCta={{ label: "How we help", href: "/services" }}
+			dividerTo="white"
+		/>
+
+		<section class="section bg-white">
+			<Container>
+				<p class="type-eyebrow">Page variant — About</p>
+			</Container>
+		</section>
+		<Hero
+			variant="page"
+			label="About us"
+			title="All about The Square Peg Agency"
+			highlight="The Square Peg Agency"
+			subtitle="The agency, the team and why we do things differently."
+			image={londonEye}
+			imagePosition="0% 62%"
+			dividerTo="white"
+		/>
+
+		<section class="section bg-white">
+			<Container>
+				<p class="type-eyebrow">Page variant — Services</p>
+			</Container>
+		</section>
+		<Hero
+			variant="page"
+			label="What we do"
+			title="Our services"
+			highlight="services"
+			subtitle="Full-service marketing solutions across branding, design, technology and strategy."
+			image={westminsterBw}
+			imagePosition="100% 50%"
+			imageFilter="grayscale"
+			dividerTo="white"
+		/>
+
+		<section class="section bg-white">
+			<Container>
+				<p class="type-eyebrow">Page variant — Contact</p>
+			</Container>
+		</section>
+		<Hero
+			variant="page"
+			label="Contact us"
+			title="Let's talk"
+			highlight="talk"
+			image={phoneBoxRain}
+			imagePosition="30% 45%"
+			minHeight="520px"
+			dividerTo="gray"
+		/>
+
+		<section class="section bg-gray">
+			<Container>
+				<p class="type-eyebrow">Page variant — Blog</p>
+			</Container>
+		</section>
+		<Hero
+			variant="page"
+			label="Insights"
+			title="The blog"
+			highlight="blog"
+			image={phoneBoxWestminster}
+			imagePosition="50% 40%"
+			minHeight="480px"
+			dividerTo="white"
+		/>
+
+		<!-- Brand mark + square peg graphic -->
+		<section class="section bg-white" id="brand-mark">
+			<Container class="stack-md">
+				<SectionHeading>Brand <span class="hl">mark</span></SectionHeading>
+				<p class="type-lead">
+					Symbol only (no wordmark). Colour via <code>currentColor</code>. Sizes 24 / 64 / 300.
+				</p>
+
+				<div class="sg-mark-row">
+					<div class="sg-mark-card bg-white" style="border: 1px solid var(--color-grey-200)">
+						<p class="type-meta">Navy on light</p>
+						<div class="sg-mark-sizes" style="color: var(--color-navy)">
+							<BrandMark size="24px" title="The Square Peg Agency" />
+							<BrandMark size="64px" />
+							<BrandMark size="300px" />
+						</div>
+					</div>
+					<div class="sg-mark-card bg-white" style="border: 1px solid var(--color-grey-200)">
+						<p class="type-meta">Red on light</p>
+						<div class="sg-mark-sizes" style="color: var(--color-red)">
+							<BrandMark size="24px" />
+							<BrandMark size="64px" />
+							<BrandMark size="300px" />
+						</div>
+					</div>
+					<div class="sg-mark-card bg-navy">
+						<p class="type-meta" style="color: var(--color-text-muted-dark)">White on navy</p>
+						<div class="sg-mark-sizes" style="color: var(--color-white)">
+							<BrandMark size="24px" />
+							<BrandMark size="64px" />
+							<BrandMark size="300px" />
+						</div>
+					</div>
+					<div class="sg-mark-card bg-red-deep">
+						<p class="type-meta" style="color: var(--color-text-on-red)">White on red</p>
+						<div class="sg-mark-sizes" style="color: var(--color-white)">
+							<BrandMark size="24px" />
+							<BrandMark size="64px" />
+							<BrandMark size="300px" />
+						</div>
+					</div>
+				</div>
+
+				<div class="stack-sm" style="margin-top: 40px">
+					<p class="type-tagline">Square peg graphic</p>
+					<div class="sg-mark-sizes" style="align-items: flex-start; gap: 40px">
+						<div>
+							<p class="type-meta">Navy boxes / red face</p>
+							<SquarePegGraphic animate={false} scheme="navy" />
+						</div>
+						<div>
+							<p class="type-meta">Red boxes / navy face</p>
+							<SquarePegGraphic animate={false} scheme="red" />
+						</div>
+					</div>
+				</div>
+			</Container>
+		</section>
+
+		<IntroStatement animate={false} />
+
+		<section class="section bg-white" id="split-feature">
+			<Container class="stack-md">
+				<SectionHeading>Banded <span class="hl">image</span></SectionHeading>
+				<div class="sg-mark-sizes" style="align-items: flex-start; gap: 40px">
+					<div>
+						<p class="type-meta">Corners tl-br</p>
+						<BandedImage
+							image={homeWestminster}
+							alt="Big Ben and Parliament, black and white"
+							position="100% 50%"
+							corners="tl-br"
+							maxWidth="280px"
+						/>
+					</div>
+					<div>
+						<p class="type-meta">Corners tl-bl</p>
+						<BandedImage
+							image={homeWestminster}
+							alt="Big Ben and Parliament, black and white"
+							position="100% 50%"
+							corners="tl-bl"
+							maxWidth="280px"
+						/>
+					</div>
+				</div>
+			</Container>
+		</section>
+
+		<BetterUnderstanding />
+
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Belief <span class="hl">card</span></SectionHeading>
+				<div class="sg-belief-cards">
+					<BeliefCard
+						number="01"
+						title="We believe {strategy} comes before tactics"
+						lead="Every marketing decision should have a purpose and every activity a role."
+						body={[
+							"Whether you're redesigning your website, investing in SEO or planning your next campaign, every activity should support a clear objective.",
+						]}
+					/>
+					<BeliefCard
+						number="02"
+						title="We {specialise} where others generalise"
+						body={[
+							"At The Square Peg Agency, we work exclusively with organisations in addiction, mental health, behavioural health and wellness sectors.",
+						]}
+					/>
+				</div>
+			</Container>
+		</section>
+
+		<Beliefs />
+
+		<section class="section bg-navy">
+			<Container class="stack-md">
+				<SectionHeading tone="navy">Stepped labels &amp; <span class="hl">service strips</span></SectionHeading>
+				<div class="stack-sm">
+					<p class="type-meta" style="color: var(--color-text-on-dark)">Ordered · lg · on navy</p>
+					<SteppedLabels
+						ordered
+						size="lg"
+						surface="navy"
+						step={96}
+						items={[
+							{ text: "Understanding first", tone: "white" },
+							{ text: "Strategy second", tone: "red" },
+							{ text: "Implementation third", tone: "royal" },
+						]}
+					/>
+				</div>
+				<div class="stack-sm">
+					<p class="type-meta" style="color: var(--color-text-on-dark)">Numbered strips · light · md · 2 cols</p>
+					<NumberedStrips
+						tone="light"
+						columns={2}
+						size="md"
+						items={[
+							"Marketing Strategy",
+							{ text: "Brand Strategy", href: "/services" },
+							"Website Design and Development",
+							"Content Marketing",
+						]}
+					/>
+				</div>
+			</Container>
+		</section>
+
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Numbered strips <span class="hl">dark · lg · staircase</span></SectionHeading>
+				<div class="stack-sm" style="max-width: 640px">
+					<p class="type-meta">Dark · lg · step 16 · animated</p>
+					<NumberedStrips
+						tone="dark"
+						columns={1}
+						size="lg"
+						step={16}
+						animate
+						items={[
+							"Specialist experience in addiction, mental health and wellness.",
+							"Strategy-led, full-service branding and marketing.",
+							"Senior expertise across creative, digital and technology.",
+						]}
+					/>
+				</div>
+			</Container>
+		</section>
+
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Stepped labels <span class="hl">on white</span></SectionHeading>
+				<div class="stack-sm">
+					<p class="type-meta">Unordered · md · disciplines</p>
+					<SteppedLabels
+						size="md"
+						step={22}
+						items={[
+							{ text: "Strategy", tone: "navy" },
+							{ text: "Branding", tone: "red" },
+							{ text: "Digital", tone: "royal" },
+							{ text: "Content", tone: "navy" },
+							{ text: "Creative", tone: "red" },
+						]}
+					/>
+				</div>
+			</Container>
+		</section>
+
+		<AboutIntro />
+
+		<section class="section bg-grey">
+			<Container class="stack-md">
+				<SectionHeading>Team <span class="hl">cards</span></SectionHeading>
+				<div class="sg-team-cards">
+					<TeamCard
+						name="Mandy"
+						role="Founder and Chief Executive Officer"
+						bio="Mandy leads SPA's strategy and direction, working closely with clients to understand their business."
+						photo={homeWestminster}
+					/>
+					<TeamCard
+						name="[Name]"
+						role="Graphic Designer"
+						bio="[Name] turns ideas into strong visual imagery across digital and print."
+					/>
+				</div>
+			</Container>
+		</section>
+
+		<Team />
+
+		<WhySpa />
+
+		<HowWeHelp />
+
+		<CtaSection
+			title="Don't fit the mould? Good."
+			tagline="Neither do we."
+			paragraphs={[
+				"Whether you're launching a new service, strengthening your brand or looking for a trusted marketing partner, we're here to help.",
+			]}
+			card={{
+				text: "If that sounds like your organisation, we'd love to {start the conversation.}",
+				cta: { label: "Let's talk", href: "/contact" },
+			}}
+		/>
+
+		<CtaSection
+			title="Not sure what you need?"
+			paragraphs={[
+				"Tell us where you are and what you're aiming for — we'll help you find a clear next step.",
+			]}
+			cta={{ label: "Let's start a conversation", href: "/contact" }}
+			slantTop={false}
+		/>
+
+		<section class="section bg-white">
+			<Container class="stack-sm">
+				<p class="type-eyebrow">Two Columns — primary, image left</p>
+			</Container>
+		</section>
+		<SplitFeature background="primary" textColor="white" divider="none" imageSide="left">
+			<SlashMark color="var(--color-secondary-on-primary)" />
+			<h2 class="type-h2" style="color: var(--color-white); margin: 0">
+				Marketing should do more than make you <span class="hl">visible</span>
+			</h2>
+			<p class="split-feature__lead">
+				A shorter demo of the primary / image-left variant used on About and Services.
+			</p>
+			<div class="split-feature__cta">
+				<Button variant="light" href="/contact">Book a discovery call</Button>
+			</div>
+			<BandedImage
+				slot="media"
+				image={homeWestminster}
+				alt="Big Ben and Parliament, black and white"
+				position="100% 50%"
+				corners="tl-bl"
+			/>
+		</SplitFeature>
+
+		<!-- Colours -->
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Colour <span class="hl">tokens</span></SectionHeading>
+
+				<div class="stack-sm">
+					<p class="type-tagline">Brand</p>
+					<div class="sg-swatches">
+						{
+							brandColors.map((c) => (
+								<div class="sg-swatch">
+									<div
+										class="sg-swatch__chip"
+										style={`background:${c.varName}${c.border ? ";border:1px solid var(--color-grey-200)" : ""}`}
+									/>
+									<p class="type-meta">{c.name}</p>
+									<p class="type-small">{c.hex}</p>
+								</div>
+							))
+						}
+					</div>
+				</div>
+
+				<div class="stack-sm">
+					<p class="type-tagline">Accessible tints (text on dark)</p>
+					<div class="sg-swatches">
+						{
+							tintColors.map((c) => (
+								<div class="sg-swatch">
+									<div class="sg-swatch__chip" style={`background:${c.varName}`} />
+									<p class="type-meta">{c.name}</p>
+									<p class="type-small">{c.hex}</p>
+								</div>
+							))
+						}
+					</div>
+					<p class="type-small" style="max-width: 36rem">
+						Never use <code>#C8102E</code> for text on navy or royal — use the tints above.
+					</p>
+				</div>
+
+				<div class="stack-sm">
+					<p class="type-tagline">Neutrals</p>
+					<div class="sg-swatches">
+						{
+							neutrals.map((c) => (
+								<div class="sg-swatch">
+									<div
+										class="sg-swatch__chip"
+										style={`background:${c.varName}${c.border ? ";border:1px solid var(--color-grey-200)" : ""}`}
+									/>
+									<p class="type-meta">{c.name}</p>
+									<p class="type-small">{c.hex}</p>
+								</div>
+							))
+						}
+					</div>
+				</div>
+
+				<div class="stack-sm">
+					<p class="type-tagline">Text</p>
+					<div class="sg-swatches">
+						{
+							textColors.map((c) => (
+								<div class="sg-swatch">
+									<div
+										class="sg-swatch__chip"
+										style={`background:${c.varName};border:1px solid var(--color-grey-200)`}
+									/>
+									<p class="type-meta">{c.name}</p>
+									<p class="type-small">{c.hex}</p>
+								</div>
+							))
+						}
+					</div>
+				</div>
+			</Container>
+		</section>
+
+		<!-- Typography -->
+		<section class="section bg-grey">
+			<Container class="stack-md">
+				<SectionHeading>Typography <span class="hl">scale</span></SectionHeading>
+				<div class="sg-type-list">
+					{
+						typeSamples.map((t) => (
+							<div class="sg-type-row">
+								<p class="type-meta sg-type-row__label">{t.label}</p>
+								<p class={t.className}>{t.sample}</p>
+							</div>
+						))
+					}
+				</div>
+				<p class="type-body">
+					Inline link example: <a href="#buttons">jump to buttons</a>. Strong text looks like
+					<strong> this</strong>.
+				</p>
+			</Container>
+		</section>
+
+		<!-- Buttons -->
+		<section class="section bg-white" id="buttons">
+			<Container class="stack-md">
+				<SectionHeading>Buttons</SectionHeading>
+				{
+					buttonSurfaces.map((surface) => (
+						<div class="stack-sm">
+							<p class="type-eyebrow">{surface.label} background</p>
+							<div
+								class:list={["sg-panel", surface.className]}
+								style={surface.style}
+							>
+								<div class="sg-btn-row">
+									<Button variant="primary" href="#">Primary</Button>
+									<Button variant="light" href="#">Light</Button>
+									<Button variant="dark" href="#">Dark</Button>
+									<Button variant="outline-light" href="#">Outline</Button>
+									<Button variant="text" href="#">Text link</Button>
+								</div>
+								<div class="sg-btn-row" style="margin-top: 24px">
+									<Button variant="primary" size="sm" href="#">Small</Button>
+									<Button variant="primary" size="md" href="#">Medium</Button>
+									<Button variant="primary" size="lg" href="#">Large</Button>
+									<Button variant="primary" arrow={false} href="#">No arrow</Button>
+								</div>
+							</div>
+						</div>
+					))
+				}
+			</Container>
+		</section>
+
+		<!-- Labels & number tabs -->
+		<section class="section bg-grey">
+			<Container class="stack-md">
+				<SectionHeading>Labels &amp; <span class="hl">number tabs</span></SectionHeading>
+				<div class="sg-btn-row">
+					<Label variant="red">Services</Label>
+					<Label variant="navy">Case study</Label>
+					<Label variant="white">Featured</Label>
+					<Label variant="red" size="small">New</Label>
+					<Label variant="navy" size="small">Blog</Label>
+				</div>
+				<div class="sg-btn-row" style="margin-top: 8px">
+					<div class="bg-navy sg-panel" style="padding: 24px; display: inline-flex; gap: 12px">
+						<Label variant="white">On navy</Label>
+						<NumberTab n="01" variant="white" />
+						<NumberTab n="02" variant="white" />
+					</div>
+					<div style="display: inline-flex; gap: 12px; align-items: center">
+						<NumberTab n={1} variant="navy" />
+						<NumberTab n={2} variant="navy" />
+						<NumberTab n="03" variant="navy" />
+					</div>
+				</div>
+			</Container>
+		</section>
+
+		<!-- Section headings + slash -->
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Section headings &amp; <span class="hl">slash mark</span></SectionHeading>
+				<div class="grid-auto">
+					<div class="sg-panel bg-white" style="border: 1px solid var(--color-grey-200)">
+						<SectionHeading tone="light">
+							Built for <span class="hl">fit</span>
+						</SectionHeading>
+					</div>
+					<div class="sg-panel bg-navy">
+						<SectionHeading tone="navy">
+							Built for <span class="hl">fit</span>
+						</SectionHeading>
+					</div>
+					<div class="sg-panel bg-royal">
+						<SectionHeading tone="royal">
+							Built for <span class="hl">fit</span>
+						</SectionHeading>
+					</div>
+					<div class="sg-panel bg-red-deep">
+						<SectionHeading tone="red" size="lg">
+							Let’s <span class="hl">talk</span>
+						</SectionHeading>
+					</div>
+				</div>
+				<div class="sg-btn-row">
+					<SlashMark />
+					<SlashMark color="var(--color-navy)" />
+					<SlashMark color="var(--color-red-on-royal)" />
+				</div>
+			</Container>
+		</section>
+
+		<!-- Slash list -->
+		<section class="section bg-grey">
+			<Container class="stack-md">
+				<SectionHeading>Slash <span class="hl">list</span></SectionHeading>
+				<div class="grid-auto">
+					<SlashList
+						items={[
+							"Brand positioning and messaging",
+							"Campaign creative and content",
+							"Websites that convert",
+						]}
+					/>
+					<ul class="slash-list">
+						<li>CSS-class slash bullets</li>
+						<li>Same red diagonal stroke</li>
+						<li>Use when you don’t need the component</li>
+					</ul>
+				</div>
+			</Container>
+		</section>
+
+		<!-- Clipped card -->
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Clipped-corner <span class="hl">card</span></SectionHeading>
+				<div class="grid-auto">
+					<article class="shape-card" style="padding: 32px">
+						<NumberTab n="01" />
+						<h3 class="type-h3" style="margin-top: 16px">Strategy</h3>
+						<p class="type-body" style="margin-top: 12px">
+							Top-right corner cut with a 5px red bottom edge via inset box-shadow.
+						</p>
+					</article>
+					<article class="shape-card shape-card--plain" style="padding: 32px; background: var(--color-navy)">
+						<h3 class="type-h3" style="color: var(--color-white)">Plain clip</h3>
+						<p class="type-body" style="margin-top: 12px; color: var(--color-text-on-dark)">
+							Same clip-path without the red bottom edge.
+						</p>
+					</article>
+				</div>
+			</Container>
+		</section>
+
+		<!-- Service blocks (all tones) -->
+		<section class="section bg-white" style="padding-bottom: 136px">
+			<Container class="stack-sm">
+				<SectionHeading>Service <span class="hl">blocks</span></SectionHeading>
+				<p class="type-lead" style="max-width: 40rem">
+					Reusable service sections — grey, white, royal (right bands), navy (left bands),
+					normal and reversed. Live Marketing Strategy entry first.
+				</p>
+			</Container>
+		</section>
+
+		{serviceBlockDemos.map((service) => <ServiceBlock service={service} />)}
+
+		<!-- Slanted edge + bands -->
+		<section class="section bg-grey" style="padding-bottom: 0">
+			<Container class="stack-sm" style="padding-bottom: var(--gap-md)">
+				<SectionHeading>Slanted edges &amp; <span class="hl">bands</span></SectionHeading>
+				<p class="type-lead">
+					The next block overlaps this section with a 56px slanted top edge.
+				</p>
+			</Container>
+		</section>
+
+		<section class="shape-slant-top bg-navy relative overflow-hidden" style="padding: var(--space-section-top) 0 var(--space-section-bottom)">
+			<div
+				class="band band--stripe-royal"
+				aria-hidden="true"
+				style="top: 0; bottom: 0; left: 8%; opacity: 0.35"
+			></div>
+			<div
+				class="band band--stripe-red"
+				aria-hidden="true"
+				style="top: 0; bottom: 0; left: 11%; opacity: 0.55"
+			></div>
+			<div class="band band--triangle-br" aria-hidden="true"></div>
+			<Container class="stack-sm" style="position: relative; z-index: 1">
+				<SectionHeading tone="navy">
+					Slant top <span class="hl">overlap</span>
+				</SectionHeading>
+				<p class="type-lead" style="color: var(--color-text-on-dark); max-width: 36rem">
+					<code>.shape-slant-top</code> cuts the top edge and pulls the section up so it
+					locks into the previous block. Decorative stripes and a corner triangle sit behind
+					the content.
+				</p>
+			</Container>
+		</section>
+
+		<section class="shape-slant-top--mirror bg-royal relative overflow-hidden" style="padding: var(--space-section-top) 0 var(--space-section-bottom)">
+			<div
+				class="band band--stripe-red"
+				aria-hidden="true"
+				style="top: 0; bottom: 0; right: 10%; opacity: 0.5"
+			></div>
+			<Container style="position: relative; z-index: 1">
+				<SectionHeading tone="royal">
+					Mirrored <span class="hl">slant</span>
+				</SectionHeading>
+				<p class="type-body" style="color: var(--color-text-on-royal); margin-top: 16px; max-width: 36rem">
+					<code>.shape-slant-top--mirror</code> flips the cut direction.
+				</p>
+			</Container>
+		</section>
+
+		<!-- Form -->
+		<section class="section bg-white">
+			<Container class="stack-md">
+				<SectionHeading>Form <span class="hl">fields</span></SectionHeading>
+				<form class="sg-form" action="#" method="get" onsubmit="return false;">
+					<div class="form-field">
+						<label class="form-field__label" for="sg-name">
+							Full name <span class="form-field__required" aria-hidden="true">*</span>
+						</label>
+						<input id="sg-name" name="name" type="text" autocomplete="name" required />
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="sg-email">
+							Email <span class="form-field__required" aria-hidden="true">*</span>
+						</label>
+						<input id="sg-email" name="email" type="email" autocomplete="email" required />
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="sg-topic">Topic</label>
+						<select id="sg-topic" name="topic">
+							<option value="">Select one</option>
+							<option>New project</option>
+							<option>Partnership</option>
+							<option>Something else</option>
+						</select>
+					</div>
+					<div class="form-field">
+						<label class="form-field__label" for="sg-message">Message</label>
+						<textarea id="sg-message" name="message" rows="4"></textarea>
+						<p class="form-field__hint">We’ll reply within two working days.</p>
+					</div>
+					<label class="form-checkbox">
+						<input type="checkbox" name="updates" />
+						<span>Send me occasional updates from The Square Peg Agency</span>
+					</label>
+					<div>
+						<Button type="submit" variant="primary">Send message</Button>
+					</div>
+				</form>
+			</Container>
+		</section>
+
+		<!-- Footer overlap checks: slant over light grey, then over deep red -->
+		<section class="section bg-grey">
+			<Container class="stack-sm">
+				<SectionHeading>Footer over <span class="hl">light</span></SectionHeading>
+				<p class="type-lead">
+					The site footer (below) cuts into this grey band with its slanted top edge.
+				</p>
+			</Container>
+		</section>
+
+		<section class="section bg-red-deep">
+			<Container class="stack-sm">
+				<SectionHeading tone="red">Footer over <span class="hl">deep red</span></SectionHeading>
+				<p class="type-lead" style="color: var(--color-text-on-red)">
+					Same overlap against a deep-red closing section. The footer sits after this block.
+				</p>
+			</Container>
+		</section>
+</BaseLayout>
+
+<style>
+	.sg-header {
+		padding: clamp(4rem, 8vw, 7rem) 0 clamp(3rem, 6vw, 5rem);
+	}
+
+	.sg-swatches {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+		gap: 20px;
+	}
+
+	.sg-swatch__chip {
+		width: 100%;
+		aspect-ratio: 1.4 / 1;
+		margin-bottom: 10px;
+	}
+
+	.sg-type-list {
+		display: flex;
+		flex-direction: column;
+		gap: 28px;
+	}
+
+	.sg-type-row__label {
+		margin-bottom: 8px;
+		color: var(--color-grey-400);
+	}
+
+	.sg-panel {
+		padding: 28px;
+	}
+
+	.sg-btn-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.sg-mark-row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 24px;
+	}
+
+	.sg-mark-card {
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		overflow: auto;
+	}
+
+	.sg-team-cards {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 28px;
+		max-width: 720px;
+	}
+
+	@media (max-width: 639px) {
+		.sg-team-cards {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	.sg-belief-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 28px;
+		align-items: start;
+	}
+
+	.sg-mark-sizes {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 20px;
+	}
+
+	.sg-form {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		max-width: 520px;
+	}
+
+	code {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.85em;
+		background: var(--color-grey-100);
+		padding: 0.1em 0.35em;
+	}
+
+	.bg-navy code,
+	.bg-royal code,
+	.bg-red-deep code {
+		background: rgb(255 255 255 / 0.12);
+		color: inherit;
+	}
+</style>

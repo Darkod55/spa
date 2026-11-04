@@ -1,0 +1,141 @@
+---
+import Button from "../../ui/Button.astro";
+import SlashMark from "../../ui/SlashMark.astro";
+import NumberedStrips from "../../ui/NumberedStrips.astro";
+import { whySpa as defaultContent } from "../../../data/about";
+import { highlightBraces } from "../../../utils/highlight";
+
+interface Props {
+	id?: string;
+	title?: string;
+	intro?: string;
+	listIntro?: string;
+	reasons?: string[];
+	cta?: { label: string; href: string };
+	class?: string;
+}
+
+const {
+	id: sectionId = "why",
+	title = defaultContent.title,
+	intro = defaultContent.intro,
+	listIntro = defaultContent.listIntro,
+	reasons = defaultContent.reasons,
+	cta = defaultContent.cta,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+---
+
+<section class:list={["why-spa", "clears-footer", className]} id={sectionId}>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container why-spa__inner">
+		<div class="why-spa__copy">
+			<SlashMark color="var(--color-red)" />
+			<h2 class="why-spa__title" set:html={titleHtml} />
+			<p class="why-spa__intro">{intro}</p>
+			<p class="why-spa__list-intro">{listIntro}</p>
+		</div>
+
+		<div class="why-spa__side">
+			<NumberedStrips
+				items={reasons}
+				tone="dark"
+				columns={1}
+				step={16}
+				size="lg"
+				animate
+			/>
+			<div class="why-spa__cta">
+				<Button variant="primary" href={cta.href}>{cta.label}</Button>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.why-spa {
+		--why-pad-top: var(--space-band); /* 104px */
+		/* Content clearance + footer 40px slant (section owns this — see .clears-footer) */
+		--why-pad-bottom: calc(var(--space-band) + 40px);
+		background: var(--color-white);
+	}
+
+	.why-spa__inner {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 48px 80px;
+		padding-block: var(--why-pad-top) var(--why-pad-bottom);
+	}
+
+	.why-spa__copy {
+		flex: 1 1 380px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+	}
+
+	.why-spa__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2-lg); /* clamp(2.75rem, 4.8vw, 4.5rem) */
+		font-weight: 600;
+		line-height: 0.98;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.why-spa__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.why-spa__intro {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-body);
+	}
+
+	.why-spa__list-intro {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.75;
+		color: var(--color-navy);
+	}
+
+	.why-spa__side {
+		flex: 1.3 1 520px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.why-spa__cta {
+		margin-top: 20px;
+	}
+
+	@media (max-width: 1023px) {
+		.why-spa__copy,
+		.why-spa__side {
+			flex-basis: auto;
+			width: 100%;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.why-spa {
+			--why-pad-top: var(--space-band-sm); /* 80px */
+			--why-pad-bottom: calc(var(--space-band-sm) + 24px);
+		}
+	}
+
+</style>

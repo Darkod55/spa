@@ -1,0 +1,88 @@
+---
+interface Props {
+	/** Divider height (default 96px; Hero mobile uses heightSmall). */
+	height?: string;
+	/** Mobile height override (default 56px). */
+	heightSmall?: string;
+	/** Lower triangle / “next section” colour. */
+	toColour?: string;
+	/** Base colour behind the slant (matches the block above). */
+	fromColour?: string;
+	/** Diagonal accent stripe colour. */
+	accentColour?: string;
+	/** Utility class for the base (e.g. bg-primary) — used by Hero. */
+	fromClass?: string;
+	/** Utility class for the “to” triangle. */
+	toClass?: string;
+	/** Utility class for the accent stripe. */
+	accentClass?: string;
+	class?: string;
+}
+
+const {
+	height = "96px",
+	heightSmall = "56px",
+	toColour = "var(--color-white)",
+	fromColour,
+	accentColour = "var(--color-red)",
+	fromClass,
+	toClass,
+	accentClass,
+	class: className = "",
+} = Astro.props;
+
+const useInlineFrom = Boolean(fromColour) && !fromClass;
+const useInlineTo = Boolean(toColour) && !toClass;
+const useInlineAccent = Boolean(accentColour) && !accentClass;
+---
+
+<div
+	class:list={["slanted-divider", fromClass, className]}
+	style={`--sd-h: ${height}; --sd-h-sm: ${heightSmall};${useInlineFrom ? ` background: ${fromColour};` : ""}`}
+	aria-hidden="true"
+>
+	{/*
+	 * Base = block above so the top seam can't flash through clip-path AA.
+	 * “To” fills only the lower triangle; accent is the brand stripe.
+	 */}
+	<div
+		class:list={["slanted-divider__to", toClass]}
+		style={useInlineTo ? `background: ${toColour}` : undefined}
+	>
+	</div>
+	<div
+		class:list={["slanted-divider__accent", accentClass]}
+		style={useInlineAccent ? `background: ${accentColour}` : undefined}
+	>
+	</div>
+</div>
+
+<style>
+	.slanted-divider {
+		position: relative;
+		height: var(--sd-h, 96px);
+		overflow: hidden;
+		margin-top: -2px;
+		padding-top: 2px;
+	}
+
+	.slanted-divider__to,
+	.slanted-divider__accent {
+		position: absolute;
+		inset: 0;
+	}
+
+	.slanted-divider__to {
+		clip-path: polygon(100% 0, 100% 100%, 0 100%);
+	}
+
+	.slanted-divider__accent {
+		clip-path: polygon(100% 0, 100% 8%, 0 100%, 0 92%);
+	}
+
+	@media (max-width: 639px) {
+		.slanted-divider {
+			height: var(--sd-h-sm, 56px);
+		}
+	}
+</style>

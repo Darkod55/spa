@@ -1,0 +1,28 @@
+{
+	"colors": ["primary", "secondary", "tertiary", "white", "gray", "black"],
+	"dividers": ["none", "slant-top", "slant-bottom"],
+	"labels": {
+		"primary": "Primary (dark blue)",
+		"secondary": "Secondary (red)",
+		"tertiary": "Tertiary (royal blue)",
+		"white": "White",
+		"gray": "Gray",
+		"black": "Black",
+		"none": "None",
+		"slant-top": "Slant into section from above",
+		"slant-bottom": "Slant out below section"
+	},
+	"defaults": {
+		"background": "tertiary",
+		"text": "white",
+		"divider": "slant-top"
+	},
+	"legacyToneMap": {
+		"navy": "primary",
+		"red": "secondary",
+		"royal": "tertiary",
+		"white": "white",
+		"grey": "gray",
+		"gray": "gray"
+	}
+}

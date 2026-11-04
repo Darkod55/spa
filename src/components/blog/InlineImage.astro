@@ -1,0 +1,105 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+
+interface Props {
+	src: ImageMetadata | string;
+	alt: string;
+	caption?: string;
+	position?: string;
+	class?: string;
+}
+
+const {
+	src,
+	alt,
+	caption,
+	position = "center",
+	class: className = "",
+} = Astro.props;
+
+const isAsset = typeof src !== "string";
+---
+
+<figure class:list={["inline-image", className]}>
+	<div class="inline-image__frame">
+		{
+			isAsset ? (
+				<Image
+					src={src}
+					alt={alt}
+					class="inline-image__img"
+					widths={[640, 960, 1280]}
+					sizes="(min-width: 1024px) 780px, 100vw"
+					quality={85}
+					loading="lazy"
+					decoding="async"
+					style={`object-position: ${position}`}
+				/>
+			) : (
+				<img
+					src={src}
+					alt={alt}
+					class="inline-image__img"
+					loading="lazy"
+					decoding="async"
+					style={`object-position: ${position}`}
+				/>
+			)
+		}
+		<div class="inline-image__bands" aria-hidden="true">
+			<span class="inline-image__band inline-image__band--red"></span>
+			<span class="inline-image__band inline-image__band--navy"></span>
+		</div>
+	</div>
+	{caption && <figcaption class="inline-image__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+	.inline-image {
+		margin: 32px 0;
+	}
+
+	.inline-image__frame {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 16 / 9;
+	}
+
+	.inline-image__img,
+	.inline-image :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.inline-image__bands {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.inline-image__band {
+		position: absolute;
+		inset: 0;
+	}
+
+	.inline-image__band--red {
+		background: var(--color-red);
+		clip-path: polygon(100% 74%, 100% 88%, 78% 100%, 52% 100%);
+	}
+
+	.inline-image__band--navy {
+		background: var(--color-navy);
+		clip-path: polygon(100% 88%, 100% 100%, 78% 100%);
+	}
+
+	.inline-image__caption {
+		margin: 12px 0 0;
+		font-family: var(--font-body);
+		font-size: 0.8125rem; /* 13px */
+		line-height: 1.5;
+		color: var(--color-text-body);
+	}
+</style>

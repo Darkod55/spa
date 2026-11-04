@@ -1,0 +1,220 @@
+---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import SlashMark from "../../ui/SlashMark.astro";
+import { moreThanAnAgency as defaultContent } from "../../../data/home";
+import { highlightBraces } from "../../../utils/highlight";
+import phoneBoxRain from "../../../assets/images/home/phone-box-rain.webp";
+
+interface Props {
+	id?: string;
+	title?: string;
+	lead?: string;
+	body?: string;
+	image?: ImageMetadata;
+	imageAlt?: string;
+	imagePosition?: string;
+	class?: string;
+}
+
+const {
+	id: sectionId,
+	title = defaultContent.title,
+	lead = defaultContent.lead,
+	body = defaultContent.body,
+	image = phoneBoxRain,
+	imageAlt = defaultContent.image.alt,
+	imagePosition = defaultContent.image.position,
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+---
+
+<section class:list={["more-agency", className]} id={sectionId}>
+	<div class="more-agency__row">
+		<div
+			class="more-agency__media"
+			style={`--more-agency-pos: ${imagePosition}`}
+		>
+			<Image
+				src={image}
+				alt={imageAlt}
+				class="more-agency__img"
+				widths={[640, 960, 1280]}
+				sizes="(min-width: 1024px) 50vw, 100vw"
+				quality={90}
+				loading="lazy"
+				decoding="async"
+			/>
+			<div class="more-agency__bands" aria-hidden="true">
+				<span class="more-agency__band more-agency__band--red"></span>
+				<span class="more-agency__band more-agency__band--navy"></span>
+				<span class="more-agency__band more-agency__band--red-sm"></span>
+			</div>
+		</div>
+
+		<div class="more-agency__copy">
+			<SlashMark color="var(--color-red)" />
+			<h2 class="more-agency__title" set:html={titleHtml} />
+			<p class="more-agency__lead">{lead}</p>
+			<p class="more-agency__body">{body}</p>
+		</div>
+	</div>
+</section>
+
+<style>
+	.more-agency {
+		position: relative;
+		overflow: hidden;
+		background: var(--color-white);
+		/* Kill sub-pixel white hairline under the navy section above */
+		margin-top: -2px;
+	}
+
+	.more-agency__row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: stretch;
+		min-height: clamp(520px, 58vh, 760px);
+	}
+
+	.more-agency__media {
+		position: relative;
+		flex: 1 1 520px;
+		min-width: 0;
+		min-height: clamp(520px, 58vh, 760px);
+		overflow: hidden;
+		/* White — navy here showed in the wedge past the photo slant */
+		background: var(--color-white);
+	}
+
+	.more-agency__img,
+	.more-agency__media :global(img) {
+		position: absolute;
+		top: -1px;
+		right: 0;
+		bottom: -1px;
+		left: 0;
+		width: 100%;
+		height: calc(100% + 2px);
+		object-fit: cover;
+		object-position: var(--more-agency-pos, 0% 50%);
+		display: block;
+		clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
+	}
+
+	.more-agency__bands {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	.more-agency__band {
+		position: absolute;
+		inset: 0;
+	}
+
+	.more-agency__band--red {
+		background: var(--color-red);
+		clip-path: polygon(100% 0, 104% 0, 82% 100%, 78% 100%);
+	}
+
+	.more-agency__band--navy {
+		background: var(--color-navy);
+		clip-path: polygon(0 70%, 0 100%, 36% 100%);
+	}
+
+	.more-agency__band--red-sm {
+		background: var(--color-red);
+		clip-path: polygon(0 84%, 0 100%, 18% 100%);
+	}
+
+	.more-agency__copy {
+		flex: 1 1 480px;
+		min-width: 0;
+		max-width: 720px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 20px;
+		/* Clear the next CTA’s 56px slant cutout on the right */
+		padding: 96px clamp(24px, 6vw, 96px) calc(96px + var(--slant-edge))
+			clamp(24px, 3vw, 48px);
+	}
+
+	.more-agency__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: var(--fs-h2);
+		font-weight: 600;
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.more-agency__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.more-agency__lead {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1.125rem; /* 18px */
+		font-weight: 500;
+		line-height: 1.6;
+		color: var(--color-navy);
+	}
+
+	.more-agency__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-body);
+	}
+
+	@media (max-width: 1023px) {
+		.more-agency__row {
+			flex-direction: column;
+			min-height: 0;
+		}
+
+		.more-agency__media {
+			flex-basis: auto;
+			width: 100%;
+			min-height: 360px;
+			/* On stacked layout, navy backs the top seam under How we help */
+			background: var(--color-navy);
+		}
+
+		.more-agency__img,
+		.more-agency__media :global(img) {
+			clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%);
+		}
+
+		.more-agency__band--red {
+			clip-path: polygon(0 100%, 100% 86%, 100% 91%, 0 105%);
+		}
+
+		.more-agency__copy {
+			flex-basis: auto;
+			width: 100%;
+			max-width: none;
+			padding: 56px var(--gutter) calc(104px + var(--slant-edge));
+		}
+	}
+
+	@media (max-width: 639px) {
+		.more-agency__media {
+			min-height: 280px;
+		}
+
+		.more-agency__copy {
+			padding-bottom: calc(96px + 32px);
+		}
+	}
+</style>

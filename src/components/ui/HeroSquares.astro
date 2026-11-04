@@ -1,0 +1,49 @@
+---
+/**
+ * Outlined squares in the bottom-left of navy heroes (home + 404).
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["hero-squares", className]} aria-hidden="true">
+	<div class="hero-squares__sq hero-squares__sq--1"></div>
+	<div class="hero-squares__sq hero-squares__sq--2"></div>
+</div>
+
+<style>
+	.hero-squares {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.hero-squares__sq {
+		position: absolute;
+		width: 260px;
+		height: 260px;
+		background: transparent;
+		pointer-events: none;
+	}
+
+	.hero-squares__sq--1 {
+		left: -90px;
+		bottom: -90px;
+		border: 2px solid rgb(255 255 255 / 0.14);
+	}
+
+	.hero-squares__sq--2 {
+		left: -40px;
+		bottom: -40px;
+		border: 2px solid rgb(200 16 46 / 0.5);
+	}
+
+	@media (max-width: 1023px) {
+		.hero-squares {
+			display: none;
+		}
+	}
+</style>

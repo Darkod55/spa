@@ -1,0 +1,40 @@
+/*
+  theme.css — YOUR design overrides live here.
+
+  Defaults are defined in tokens.css. Anything you set in this file
+  wins, because these declarations are unlayered.
+
+  Full guide: THEME.md
+*/
+
+:root {
+	/* Brand — from The Square Peg Agency logo */
+	--color-brand: #012169;
+	--color-brand-strong: color-mix(in srgb, #012169 88%, #000);
+	--color-on-brand: #ffffff;
+	--color-accent: #c8102e;
+	--color-accent-soft: color-mix(in srgb, #c8102e 18%, transparent);
+
+	/* Flat canvas to start — remove Halden warm glows */
+	--color-bg: #ffffff;
+	--color-surface: #ffffff;
+	--color-sunken: #f4f5f7;
+	--color-text: #012169;
+	--color-text-secondary: color-mix(in srgb, #012169 72%, #64748b);
+	--color-muted: #64748b;
+	--color-border: rgb(1 33 105 / 0.1);
+	--color-border-strong: rgb(1 33 105 / 0.2);
+	--color-night: #012169;
+	--color-on-night: #ffffff;
+	--color-on-night-muted: rgb(255 255 255 / 0.7);
+	--glow-daylight: none;
+	--glow-dusk: none;
+
+	/* Sharper, less “SaaS template” radii while you design */
+	--radius-sm: 4px;
+	--radius: 6px;
+	--radius-lg: 8px;
+	--radius-xl: 10px;
+	--radius-media: 0;
+	--radius-sheet: 0;
+}

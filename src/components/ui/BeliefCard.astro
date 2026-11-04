@@ -1,0 +1,114 @@
+---
+import NumberTab from "./NumberTab.astro";
+import { highlightBraces } from "../../utils/highlight";
+
+interface Props {
+	number: string;
+	title: string;
+	lead?: string;
+	body: string[];
+	/** Desktop stagger step: 0 / 1 / 2 → 0 / 40px / 80px */
+	offset?: "0" | "1" | "2";
+	class?: string;
+}
+
+const {
+	number,
+	title,
+	lead,
+	body,
+	offset = "0",
+	class: className = "",
+} = Astro.props;
+
+const titleHtml = highlightBraces(title);
+---
+
+<article
+	class:list={["belief-card", `belief-card--offset-${offset}`, className]}
+>
+	<NumberTab n={number} variant="navy" class="belief-card__tab" />
+	<h3 class="belief-card__title" set:html={titleHtml} />
+	{lead && <p class="belief-card__lead">{lead}</p>}
+	{
+		body.map((paragraph) => (
+			<p class="belief-card__body">{paragraph}</p>
+		))
+	}
+</article>
+
+<style>
+	.belief-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+		padding: 64px 36px 44px;
+		background: var(--color-white);
+		clip-path: polygon(0 28px, 100% 0, 100% 100%, 0 100%);
+		box-shadow: inset 0 -5px 0 var(--color-red);
+	}
+
+	.belief-card--offset-0 {
+		margin-top: 0;
+	}
+
+	.belief-card--offset-1 {
+		margin-top: 40px;
+	}
+
+	.belief-card--offset-2 {
+		margin-top: 80px;
+	}
+
+	.belief-card :global(.belief-card__tab) {
+		padding: 6px 22px;
+		font-size: 1.375rem; /* 22px */
+	}
+
+	.belief-card__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 1.75rem; /* 28px */
+		font-weight: 600;
+		line-height: 1.1;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.belief-card__title :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.belief-card__lead {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 600;
+		line-height: 1.6;
+		color: var(--color-navy);
+	}
+
+	.belief-card__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.875rem; /* 14px */
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-body);
+	}
+
+	@media (max-width: 1023px) {
+		.belief-card--offset-0,
+		.belief-card--offset-1,
+		.belief-card--offset-2 {
+			margin-top: 0;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.belief-card {
+			padding: 56px 28px 36px;
+		}
+	}
+</style>

@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/sections/Hero.astro";
+import IntroStatement from "../components/sections/home/IntroStatement.astro";
+import BetterUnderstanding from "../components/sections/home/BetterUnderstanding.astro";
+import Beliefs from "../components/sections/home/Beliefs.astro";
+import HowWeHelp from "../components/sections/home/HowWeHelp.astro";
+import MoreThanAnAgency from "../components/sections/home/MoreThanAnAgency.astro";
+import CtaSection from "../components/sections/CtaSection.astro";
+import {
+	homeBeliefs,
+	homeBetterUnderstanding,
+	homeCtaSection,
+	homeHero,
+	homeHowWeHelp,
+	homeIntro,
+	homeMeta,
+	homeMoreThanAnAgency,
+} from "../content/home";
+---
+
+<BaseLayout
+	title={homeMeta.title}
+	description={homeMeta.description}
+	canonicalPath={homeMeta.canonicalPath}
+>
+	<Hero {...homeHero} />
+	<IntroStatement {...homeIntro} />
+	<BetterUnderstanding {...homeBetterUnderstanding} />
+	<Beliefs {...homeBeliefs} beforeSplit />
+	<HowWeHelp {...homeHowWeHelp} />
+	<MoreThanAnAgency {...homeMoreThanAnAgency} />
+	<CtaSection {...homeCtaSection} />
+</BaseLayout>

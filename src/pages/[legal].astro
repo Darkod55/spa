@@ -1,0 +1,39 @@
+---
+/**
+ * Prerenders legal Markdown pages at build time.
+ * Dev / SSR fallback is handled in [...slug].astro (legal checked before EmDash).
+ */
+import { getCollection, render } from "astro:content";
+import LegalLayout from "../layouts/LegalLayout.astro";
+import { assertLegalSlugsDoNotClash } from "../utils/assertLegalSlugs";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+	const entries = await getCollection("legal");
+	assertLegalSlugsDoNotClash(entries.map((entry) => entry.id));
+
+	return entries.map((entry) => ({
+		params: { legal: entry.id },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const { title, highlight, description, lastUpdated, effectiveFrom, intro, draft } =
+	entry.data;
+---
+
+<LegalLayout
+	title={title}
+	highlight={highlight}
+	description={description}
+	lastUpdated={lastUpdated}
+	effectiveFrom={effectiveFrom}
+	intro={intro}
+	draft={draft}
+	headings={headings}
+>
+	<Content />
+</LegalLayout>

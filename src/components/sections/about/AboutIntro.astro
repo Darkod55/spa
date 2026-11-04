@@ -1,0 +1,150 @@
+---
+import Button from "../../ui/Button.astro";
+import SlashMark from "../../ui/SlashMark.astro";
+import SteppedLabels, {
+	type SteppedLabelItem,
+} from "../../ui/SteppedLabels.astro";
+import { aboutIntro as defaultContent } from "../../../data/about";
+import { highlightBraces } from "../../../utils/highlight";
+
+interface Props {
+	id?: string;
+	statement?: string;
+	disciplines?: readonly SteppedLabelItem[];
+	lead?: string;
+	body?: string[];
+	cta?: { label: string; href: string };
+	class?: string;
+}
+
+const {
+	id: sectionId = "agency",
+	statement = defaultContent.statement,
+	disciplines = defaultContent.disciplines,
+	lead = defaultContent.lead,
+	body = defaultContent.body,
+	cta = defaultContent.cta,
+	class: className = "",
+} = Astro.props;
+
+const statementHtml = highlightBraces(statement);
+---
+
+<section class:list={["about-intro", className]} id={sectionId}>
+	<h2 class="visually-hidden">About the agency</h2>
+	{/* Native .container — scoped styles miss child-component roots */}
+	<div class="container about-intro__inner">
+		<div class="about-intro__left">
+			<SlashMark color="var(--color-red)" />
+			<p class="about-intro__statement" set:html={statementHtml} />
+			<SteppedLabels items={disciplines} step={22} size="md" />
+		</div>
+
+		<div class="about-intro__right">
+			<p class="about-intro__lead">{lead}</p>
+			{
+				body.map((paragraph) => (
+					<p class="about-intro__body">{paragraph}</p>
+				))
+			}
+			<div class="about-intro__cta">
+				<Button variant="primary" href={cta.href}>{cta.label}</Button>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.about-intro {
+		--about-intro-pad-top: 48px;
+		--about-intro-pad-bottom: 112px;
+		--about-intro-col-gap: 48px 88px;
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.about-intro__inner {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--about-intro-col-gap);
+		padding-block: var(--about-intro-pad-top) var(--about-intro-pad-bottom);
+	}
+
+	.about-intro__left {
+		flex: 1 1 440px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 28px;
+	}
+
+	.about-intro__statement {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+		font-weight: 500;
+		line-height: 1.18;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.about-intro__statement :global(.hl) {
+		color: var(--color-red);
+	}
+
+	.about-intro__right {
+		flex: 1.2 1 480px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 20px;
+	}
+
+	.about-intro__lead {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: var(--fs-lead);
+		font-weight: 500;
+		line-height: 1.65;
+		color: var(--color-navy);
+	}
+
+	.about-intro__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: var(--fs-body);
+		font-weight: 400;
+		line-height: 1.75;
+		color: var(--color-text-body);
+	}
+
+	.about-intro__cta {
+		margin-top: 8px;
+	}
+
+	@media (max-width: 1023px) {
+		.about-intro__inner {
+			gap: 40px;
+		}
+
+		.about-intro__left,
+		.about-intro__right {
+			flex-basis: auto;
+			width: 100%;
+		}
+
+		.about-intro__right {
+			justify-content: flex-start;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.about-intro {
+			--about-intro-pad-top: 32px;
+			--about-intro-pad-bottom: 96px;
+		}
+	}
+
+</style>

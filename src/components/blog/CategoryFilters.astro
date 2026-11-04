@@ -1,0 +1,360 @@
+---
+import {
+	BLOG_CATEGORIES,
+	blogIndexPath,
+	type BlogCategory,
+} from "../../utils/blog";
+
+interface Props {
+	active?: string;
+	/** Only categories with at least one related post. Defaults to all. */
+	categories?: readonly BlogCategory[];
+	class?: string;
+}
+
+const {
+	active,
+	categories = BLOG_CATEGORIES,
+	class: className = "",
+} = Astro.props;
+
+const filters = [
+	{ label: "All", href: blogIndexPath(), value: "" },
+	...categories.map((category) => ({
+		label: category,
+		href: blogIndexPath({ category }),
+		value: category,
+	})),
+];
+
+const activeNormalized = active?.toLowerCase() ?? "";
+---
+
+<nav
+	class:list={["category-filters", className]}
+	aria-label="Filter by category"
+	data-blog-filters
+	data-initial-category={active ?? ""}
+>
+	<ul class="category-filters__list">
+		{
+			filters.map((filter) => {
+				const isActive =
+					(!activeNormalized && !filter.value) ||
+					filter.value.toLowerCase() === activeNormalized;
+				return (
+					<li class="category-filters__item">
+						<span
+							class:list={[
+								"category-filters__shell",
+								isActive && "category-filters__shell--active",
+							]}
+						>
+							<button
+								type="button"
+								class:list={[
+									"category-filters__chip",
+									isActive && "category-filters__chip--active",
+								]}
+								data-filter={filter.value}
+								data-filter-href={filter.href}
+								aria-pressed={isActive ? "true" : "false"}
+							>
+								{filter.label}
+							</button>
+						</span>
+					</li>
+				);
+			})
+		}
+	</ul>
+</nav>
+
+<script>
+	function initBlogFilters() {
+		const nav = document.querySelector("[data-blog-filters]");
+		const grid = document.querySelector("[data-blog-grid]");
+		const empty = document.querySelector("[data-blog-empty]");
+		const pagination = document.querySelector("[data-blog-pagination]");
+		if (!(nav instanceof HTMLElement) || !(grid instanceof HTMLElement)) return;
+		if (nav.dataset.bound === "true") return;
+		nav.dataset.bound = "true";
+
+		const buttons = [
+			...nav.querySelectorAll<HTMLButtonElement>("[data-filter]"),
+		];
+		const items = [...grid.querySelectorAll<HTMLElement>("[data-category]")];
+		const pageSize = Number(grid.dataset.pageSize || "9");
+
+		const apply = (category: string, { pushUrl = true, page = 1 } = {}) => {
+			const normalized = category.toLowerCase();
+
+			for (const button of buttons) {
+				const value = button.dataset.filter ?? "";
+				const isActive =
+					(!normalized && !value) || value.toLowerCase() === normalized;
+				button.setAttribute("aria-pressed", isActive ? "true" : "false");
+				button.classList.toggle("category-filters__chip--active", isActive);
+				button.parentElement?.classList.toggle(
+					"category-filters__shell--active",
+					isActive,
+				);
+			}
+
+			const matched = items.filter((item) => {
+				if (!normalized) return true;
+				return (item.dataset.category || "").toLowerCase() === normalized;
+			});
+
+			for (const item of items) item.hidden = true;
+
+			const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
+			const safePage = Math.min(Math.max(1, page), totalPages);
+			const start = (safePage - 1) * pageSize;
+			const visible = matched.slice(start, start + pageSize);
+			for (const item of visible) item.hidden = false;
+
+			if (empty instanceof HTMLElement) empty.hidden = matched.length > 0;
+
+			if (pagination instanceof HTMLElement) {
+				renderPagination(pagination, {
+					page: safePage,
+					totalPages,
+				});
+				pagination.hidden = totalPages <= 1;
+			}
+
+			if (pushUrl) {
+				const href =
+					buttons.find((button) => {
+						const value = button.dataset.filter ?? "";
+						return (
+							(!normalized && !value) ||
+							value.toLowerCase() === normalized
+						);
+					})?.dataset.filterHref ?? "/blog";
+				const url = new URL(href, window.location.origin);
+				if (safePage > 1) url.searchParams.set("page", String(safePage));
+				else url.searchParams.delete("page");
+				window.history.pushState({ category, page: safePage }, "", url);
+			}
+
+			grid.dataset.activeCategory = category;
+			grid.dataset.activePage = String(safePage);
+		};
+
+		function getPaginationRange(
+			current: number,
+			total: number,
+			siblingCount = 1,
+		): Array<number | "ellipsis"> {
+			if (total <= 7) {
+				return Array.from({ length: total }, (_, i) => i + 1);
+			}
+
+			const pages = new Set<number>([1, total]);
+			for (let i = current - siblingCount; i <= current + siblingCount; i++) {
+				if (i >= 1 && i <= total) pages.add(i);
+			}
+			if (current <= 3) {
+				pages.add(2);
+				pages.add(3);
+				pages.add(4);
+			}
+			if (current >= total - 2) {
+				pages.add(total - 3);
+				pages.add(total - 2);
+				pages.add(total - 1);
+			}
+
+			const sorted = [...pages].sort((a, b) => a - b);
+			const range: Array<number | "ellipsis"> = [];
+			for (let i = 0; i < sorted.length; i++) {
+				const pageNum = sorted[i];
+				if (pageNum == null) continue;
+				const prevNum = sorted[i - 1];
+				if (prevNum != null && pageNum - prevNum > 1) range.push("ellipsis");
+				range.push(pageNum);
+			}
+			return range;
+		}
+
+		function renderPagination(
+			root: HTMLElement,
+			opts: { page: number; totalPages: number },
+		) {
+			const list = root.querySelector("[data-pagination-list]");
+			if (!(list instanceof HTMLElement)) return;
+
+			const arrowNext =
+				'<svg width="16" height="10" viewBox="0 0 20 12" fill="none" aria-hidden="true"><path d="M0 6 H16" stroke="currentColor" stroke-width="1.8"/><path d="M12 1 L17 6 L12 11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="miter"/></svg>';
+			const arrowPrev =
+				'<svg width="16" height="10" viewBox="0 0 20 12" fill="none" aria-hidden="true"><path d="M20 6 H4" stroke="currentColor" stroke-width="1.8"/><path d="M8 1 L3 6 L8 11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="miter"/></svg>';
+
+			list.replaceChildren();
+
+			const prevLi = document.createElement("li");
+			const prev = document.createElement("button");
+			prev.type = "button";
+			prev.className = "blog-pagination__prev";
+			prev.dataset.page = String(Math.max(1, opts.page - 1));
+			prev.innerHTML = `${arrowPrev} Prev`;
+			prev.disabled = opts.page <= 1;
+			if (prev.disabled) prev.setAttribute("aria-disabled", "true");
+			prevLi.append(prev);
+			list.append(prevLi);
+
+			for (const item of getPaginationRange(opts.page, opts.totalPages)) {
+				const li = document.createElement("li");
+				if (item === "ellipsis") {
+					li.setAttribute("aria-hidden", "true");
+					const dots = document.createElement("span");
+					dots.className = "blog-pagination__ellipsis";
+					dots.textContent = "…";
+					li.append(dots);
+					list.append(li);
+					continue;
+				}
+
+				const button = document.createElement("button");
+				button.type = "button";
+				button.dataset.page = String(item);
+				button.textContent = String(item);
+
+				if (item === opts.page) {
+					button.className =
+						"blog-pagination__page blog-pagination__page--active";
+					button.setAttribute("aria-current", "page");
+					li.append(button);
+				} else {
+					button.className = "blog-pagination__page";
+					const shell = document.createElement("span");
+					shell.className = "blog-pagination__shell";
+					shell.append(button);
+					li.append(shell);
+				}
+				list.append(li);
+			}
+
+			const nextLi = document.createElement("li");
+			const next = document.createElement("button");
+			next.type = "button";
+			next.className = "blog-pagination__next";
+			next.dataset.page = String(Math.min(opts.totalPages, opts.page + 1));
+			next.innerHTML = `Next ${arrowNext}`;
+			next.disabled = opts.page >= opts.totalPages;
+			if (next.disabled) next.setAttribute("aria-disabled", "true");
+			nextLi.append(next);
+			list.append(nextLi);
+		}
+
+		nav.addEventListener("click", (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			const button = target.closest<HTMLButtonElement>("[data-filter]");
+			if (!button || !nav.contains(button)) return;
+			apply(button.dataset.filter ?? "", { page: 1 });
+		});
+
+		pagination?.addEventListener("click", (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			const button = target.closest<HTMLButtonElement>("[data-page]");
+			if (!button || !pagination.contains(button) || button.disabled) return;
+			const nextPage = Number(button.dataset.page || "1");
+			apply(grid.dataset.activeCategory ?? "", { page: nextPage });
+		});
+
+		window.addEventListener("popstate", () => {
+			const params = new URLSearchParams(window.location.search);
+			apply(params.get("category") ?? "", {
+				pushUrl: false,
+				page: Number(params.get("page") || "1"),
+			});
+		});
+
+		const params = new URLSearchParams(window.location.search);
+		apply(params.get("category") ?? nav.dataset.initialCategory ?? "", {
+			pushUrl: false,
+			page: Number(params.get("page") || "1"),
+		});
+	}
+
+	initBlogFilters();
+	document.addEventListener("astro:page-load", initBlogFilters);
+</script>
+
+<style>
+	.category-filters__list {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.category-filters__item {
+		display: flex;
+		margin: 0;
+		padding: 0;
+	}
+
+	.category-filters__shell {
+		--slant: 8px;
+		display: flex;
+		background: var(--color-grey-200);
+		padding: 1px;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.category-filters__shell--active {
+		background: var(--color-navy);
+	}
+
+	.category-filters__chip {
+		--slant: 7px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 38px;
+		padding: 0 18px;
+		border: none;
+		background: var(--color-white);
+		color: var(--color-navy);
+		font-family: var(--font-heading);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		line-height: 1;
+		text-transform: uppercase;
+		cursor: pointer;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.category-filters__chip:hover,
+	.category-filters__chip:focus-visible {
+		background: var(--color-grey-50);
+	}
+
+	.category-filters__chip--active,
+	.category-filters__chip--active:hover,
+	.category-filters__chip--active:focus-visible {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+</style>

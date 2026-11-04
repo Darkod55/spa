@@ -1,0 +1,412 @@
+---
+import Button from "../../ui/Button.astro";
+import BandedImage from "../../ui/BandedImage.astro";
+import NumberTab from "../../ui/NumberTab.astro";
+import SlashList from "../../ui/SlashList.astro";
+import type { ServiceItem } from "../../../data/services";
+
+interface Props {
+	service: ServiceItem;
+	class?: string;
+}
+
+const { service, class: className = "" } = Astro.props;
+
+const {
+	id,
+	number,
+	title,
+	tagline,
+	lead,
+	body,
+	included,
+	cta,
+	ctaVariant,
+	tone,
+	reverse,
+	slant,
+	bands = "none",
+	listColumns = 1,
+	image,
+	imageAlt = "",
+	imagePosition = "center",
+	imageCorners = "tl-br",
+} = service;
+
+const isDark = tone === "royal" || tone === "navy";
+const tabVariant = isDark ? "white" : "navy";
+/** SlashList: dark = white text + red-on-navy slash (navy card); light = navy text + red slash (white card). */
+const listTone = isDark ? "light" : "dark";
+const buttonVariant = ctaVariant ?? (isDark ? "light" : "primary");
+const showBands = bands === "left" || bands === "right";
+const showIncluded = Boolean(included?.length);
+const showImage = Boolean(image);
+---
+
+<section
+	id={id}
+	class:list={[
+		"service-block",
+		`service-block--${tone}`,
+		`service-block--slant-${slant}`,
+		reverse && "service-block--reverse",
+		showBands && `service-block--bands-${bands}`,
+		showImage && "service-block--media",
+		className,
+	]}
+>
+	<span class="service-block__bg-num" aria-hidden="true">{number}</span>
+
+	{
+		showBands && (
+			<div class="service-block__bands" aria-hidden="true">
+				{bands === "right" ? (
+					<>
+						<div class="service-block__band service-block__band--stripe-right" />
+						<div class="service-block__band service-block__band--panel-right" />
+					</>
+				) : (
+					<>
+						<div class="service-block__band service-block__band--panel-left" />
+						<div class="service-block__band service-block__band--stripe-left" />
+					</>
+				)}
+			</div>
+		)
+	}
+
+	<div class="container service-block__inner">
+		<div class="service-block__copy">
+			<NumberTab n={number} variant={tabVariant} />
+			<h2 class="service-block__title">{title}</h2>
+			<p class="service-block__tagline">{tagline}</p>
+			<p class="service-block__lead">{lead}</p>
+			{
+				body.map((paragraph) => (
+					<p class="service-block__body">{paragraph}</p>
+				))
+			}
+			<div class="service-block__cta">
+				<Button variant={buttonVariant} href={cta.href}>
+					{cta.label}
+				</Button>
+			</div>
+		</div>
+
+		{
+			showImage && image ? (
+				<div class="service-block__media">
+					<BandedImage
+						{image}
+						alt={imageAlt}
+						position={imagePosition}
+						corners={imageCorners}
+						maxWidth="560px"
+					/>
+				</div>
+			) : showIncluded && included ? (
+				<div class:list={["service-block__card", isDark && "service-block__card--light"]}>
+					<p class="service-block__card-label">What's included</p>
+					<SlashList items={included} tone={listTone} columns={listColumns} />
+				</div>
+			) : null
+		}
+	</div>
+</section>
+
+<style>
+	.service-block {
+		--sb-slant: var(--slant-edge, 56px);
+		position: relative;
+		overflow: hidden;
+		scroll-margin-top: 7.5rem;
+		margin-top: calc(var(--sb-slant) * -1);
+	}
+
+	.service-block--grey {
+		background: var(--color-grey-50);
+		color: var(--color-navy);
+	}
+
+	.service-block--white {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.service-block--royal {
+		background: var(--color-royal);
+		color: var(--color-white);
+	}
+
+	.service-block--navy {
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.service-block--slant-up {
+		clip-path: polygon(0 var(--sb-slant), 100% 0, 100% 100%, 0 100%);
+	}
+
+	.service-block--slant-down {
+		clip-path: polygon(0 0, 100% var(--sb-slant), 100% 100%, 0 100%);
+	}
+
+	.service-block__bg-num {
+		position: absolute;
+		top: 72px;
+		right: 24px;
+		/* Above side bands so the watermark isn’t clipped by them */
+		z-index: 1;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: clamp(160px, 18vw, 280px);
+		line-height: 1;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.service-block--grey .service-block__bg-num,
+	.service-block--white .service-block__bg-num {
+		color: rgb(3 20 51 / 0.05);
+	}
+
+	.service-block--royal .service-block__bg-num,
+	.service-block--navy .service-block__bg-num {
+		color: rgb(255 255 255 / 0.06);
+	}
+
+	.service-block__bands {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.service-block__band {
+		position: absolute;
+		inset: 0;
+	}
+
+	.service-block__band--stripe-right {
+		background: var(--color-red);
+		clip-path: polygon(92% 0, 93.4% 0, 83.4% 100%, 82% 100%);
+	}
+
+	.service-block__band--panel-right {
+		background: var(--color-navy);
+		clip-path: polygon(95% 0, 100% 0, 100% 100%, 85% 100%);
+	}
+
+	.service-block__band--panel-left {
+		background: var(--color-royal);
+		clip-path: polygon(0 0, 7% 0, 17% 100%, 0 100%);
+	}
+
+	.service-block__band--stripe-left {
+		background: var(--color-red);
+		clip-path: polygon(8.2% 0, 9.6% 0, 19.6% 100%, 18.2% 100%);
+	}
+
+	.service-block__inner {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 48px 80px;
+		padding-top: 152px;
+		padding-bottom: 128px;
+	}
+
+	.service-block--reverse .service-block__inner {
+		flex-direction: row-reverse;
+	}
+
+	.service-block__copy {
+		display: flex;
+		flex: 1.1 1 480px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18px;
+		min-width: 0;
+	}
+
+	.service-block__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: clamp(2.375rem, 3.8vw, 3.5rem); /* 38px → 56px */
+		line-height: 1.02;
+		text-transform: uppercase;
+	}
+
+	.service-block--grey .service-block__title,
+	.service-block--white .service-block__title {
+		color: var(--color-navy);
+	}
+
+	.service-block--royal .service-block__title,
+	.service-block--navy .service-block__title {
+		color: var(--color-white);
+	}
+
+	.service-block__tagline {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		font-size: 1.5rem; /* 24px */
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+	}
+
+	.service-block--grey .service-block__tagline,
+	.service-block--white .service-block__tagline {
+		color: var(--color-red);
+	}
+
+	.service-block--royal .service-block__tagline {
+		color: var(--color-red-on-royal);
+	}
+
+	.service-block--navy .service-block__tagline {
+		color: var(--color-red-on-navy);
+	}
+
+	.service-block__lead {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1.125rem; /* 18px */
+		font-weight: 500;
+		line-height: 1.6;
+	}
+
+	.service-block--grey .service-block__lead,
+	.service-block--white .service-block__lead {
+		color: var(--color-navy);
+	}
+
+	.service-block--royal .service-block__lead,
+	.service-block--navy .service-block__lead {
+		color: var(--color-white);
+	}
+
+	.service-block__body {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.9375rem; /* 15px */
+		font-weight: 400;
+		line-height: 1.75;
+	}
+
+	.service-block--grey .service-block__body,
+	.service-block--white .service-block__body {
+		color: var(--color-text-body);
+	}
+
+	.service-block--royal .service-block__body {
+		color: var(--color-text-on-royal);
+	}
+
+	.service-block--navy .service-block__body {
+		color: var(--color-text-on-dark);
+	}
+
+	.service-block__cta {
+		margin-top: 8px;
+	}
+
+	.service-block__media {
+		flex: 1 1 380px;
+		min-width: 0;
+		display: flex;
+		justify-content: center;
+	}
+
+	.service-block__media :global(.banded-image) {
+		width: 100%;
+	}
+
+	.service-block__card {
+		flex: 1 1 380px;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		padding: 40px 40px 44px;
+		background: var(--color-navy);
+		color: var(--color-white);
+		clip-path: polygon(
+			0 0,
+			calc(100% - 44px) 0,
+			100% 44px,
+			100% 100%,
+			0 100%
+		);
+		box-shadow: inset 0 -5px 0 var(--color-red);
+	}
+
+	.service-block__card--light {
+		background: var(--color-white);
+		color: var(--color-navy);
+	}
+
+	.service-block__card-label {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		font-size: 0.9375rem; /* 15px */
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.service-block__card:not(.service-block__card--light) .service-block__card-label {
+		color: var(--color-text-on-dark);
+	}
+
+	.service-block__card--light .service-block__card-label {
+		color: var(--color-text-body);
+	}
+
+	@media (max-width: 1023px) {
+		.service-block--reverse .service-block__inner {
+			flex-direction: row;
+		}
+
+		.service-block__inner {
+			gap: 40px;
+		}
+
+		.service-block__bands {
+			display: none;
+		}
+
+		/* Stacked: watermark smaller, still top-right */
+		.service-block__bg-num {
+			top: 56px;
+			right: 16px;
+			font-size: clamp(120px, 22vw, 180px);
+		}
+	}
+
+	@media (max-width: 639px) {
+		.service-block {
+			--sb-slant: 32px;
+		}
+
+		.service-block__inner {
+			padding-top: 112px;
+			padding-bottom: 96px;
+		}
+
+		.service-block__bg-num {
+			top: 48px;
+			right: 12px;
+			font-size: clamp(96px, 28vw, 140px);
+		}
+
+		.service-block__card {
+			padding: 32px 28px 36px;
+		}
+	}
+
+</style>

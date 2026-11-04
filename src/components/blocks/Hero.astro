@@ -1,0 +1,122 @@
+---
+import { sanitizeHref } from "emdash";
+import { Image, type BlockComponentProps } from "emdash/ui";
+import type {
+	PageContentMarketingHeroV1Block,
+	PageContentMarketingHeroV2Block,
+} from "../../../emdash-env";
+import type { PageContentBlock } from "../../../emdash-env";
+import { normalizeSurfaceColor } from "../../design/surfaces";
+import SectionHero from "../sections/Hero.astro";
+
+type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
+type Props = BlockComponentProps<HeroBlock>;
+
+const { value } = Astro.props;
+
+function mapV2(block: PageContentMarketingHeroV2Block) {
+	const background = normalizeSurfaceColor(block.background, "primary");
+	const dividerTo = normalizeSurfaceColor(
+		block.divider_to === "grey" ? "gray" : block.divider_to,
+		"white",
+	);
+	return {
+		variant: (block.variant === "home" ? "home" : "page") as "home" | "page",
+		background,
+		textColor: block.text_color ?? undefined,
+		label: block.label,
+		title: block.title,
+		highlight: block.highlight ?? undefined,
+		subtitle: block.subtitle ?? undefined,
+		imageAlt: block.image_alt ?? "",
+		imagePosition: block.image_position?.trim() || "center",
+		imageFilter: (block.image_filter === "grayscale" ? "grayscale" : "none") as
+			| "none"
+			| "grayscale",
+		minHeight: block.min_height?.trim() || undefined,
+		divider: block.show_divider !== false,
+		dividerTo,
+	};
+}
+
+function mapV1(block: PageContentMarketingHeroV1Block) {
+	return {
+		variant: "page" as const,
+		background: "primary" as const,
+		textColor: undefined as string | undefined,
+		label: block.eyebrow?.trim() || "The Square Peg Agency",
+		title: block.headline,
+		highlight: undefined as string | undefined,
+		subtitle: block.subheadline ?? undefined,
+		imageAlt: block.image_caption ?? block.image?.alt ?? "",
+		imagePosition: "center",
+		imageFilter: "none" as const,
+		minHeight: undefined as string | undefined,
+		divider: true,
+		dividerTo: "white" as const,
+	};
+}
+
+const mapped = value._version === 2 ? mapV2(value) : mapV1(value);
+const image = value.image ?? undefined;
+
+const primaryCta =
+	value.primary_cta_label && value.primary_cta_url
+		? {
+				label: value.primary_cta_label,
+				href: sanitizeHref(value.primary_cta_url),
+				newTab:
+					value._version === 2 ? value.primary_cta_new_tab === true : false,
+			}
+		: undefined;
+const secondaryCta =
+	value.secondary_cta_label && value.secondary_cta_url
+		? {
+				label: value.secondary_cta_label,
+				href: sanitizeHref(value.secondary_cta_url),
+				newTab:
+					value._version === 2 ? value.secondary_cta_new_tab === true : false,
+			}
+		: undefined;
+
+const photoSizes =
+	mapped.variant === "home"
+		? "(min-width: 768px) 52vw, 100vw"
+		: "(min-width: 768px) 46vw, 100vw";
+---
+
+<SectionHero
+	id={value.anchor_id || undefined}
+	variant={mapped.variant}
+	background={mapped.background}
+	textColor={mapped.textColor}
+	label={mapped.label}
+	title={mapped.title}
+	highlight={mapped.highlight}
+	subtitle={mapped.subtitle}
+	imageAlt={mapped.imageAlt}
+	imagePosition={mapped.imagePosition}
+	imageFilter={mapped.imageFilter}
+	{primaryCta}
+	{secondaryCta}
+	minHeight={mapped.minHeight}
+	divider={mapped.divider}
+	dividerTo={mapped.dividerTo}
+>
+	{
+		image && (
+			<Image
+				slot="photo"
+				image={image}
+				alt={mapped.imageAlt}
+				class:list={[
+					"hero__img",
+					mapped.imageFilter === "grayscale" && "hero__img--grayscale",
+				]}
+				priority
+				sizes={photoSizes}
+				style={`object-position: ${mapped.imagePosition}`}
+			/>
+		)
+	}
+</SectionHero>

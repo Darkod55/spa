@@ -1,0 +1,31 @@
+---
+interface Props {
+	/** Stroke colour — defaults to brand red */
+	color?: string;
+	class?: string;
+}
+
+const { color = "var(--color-red)", class: className = "" } = Astro.props;
+---
+
+<svg
+	class:list={["slash-mark", className]}
+	width="56"
+	height="20"
+	viewBox="0 0 56 20"
+	fill="none"
+	xmlns="http://www.w3.org/2000/svg"
+	aria-hidden="true"
+	focusable="false"
+>
+	<path d="M8 18 L20 2" stroke={color} stroke-width="3" stroke-linecap="round"></path>
+	<path d="M22 18 L34 2" stroke={color} stroke-width="3" stroke-linecap="round"></path>
+	<path d="M36 18 L48 2" stroke={color} stroke-width="3" stroke-linecap="round"></path>
+</svg>
+
+<style>
+	.slash-mark {
+		display: block;
+		flex-shrink: 0;
+	}
+</style>

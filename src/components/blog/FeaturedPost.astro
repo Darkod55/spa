@@ -1,0 +1,182 @@
+---
+import { Image } from "astro:assets";
+import Button from "../ui/Button.astro";
+import Label from "../ui/Label.astro";
+import {
+	blogPostPath,
+	formatBlogDate,
+	getTeamMember,
+	resolveReadingTime,
+	type BlogPost,
+} from "../../utils/blog";
+
+interface Props {
+	post: BlogPost;
+	class?: string;
+}
+
+const { post, class: className = "" } = Astro.props;
+const { title, excerpt, category, cover, coverPosition, publishDate, author, readingTime } =
+	post.data;
+const member = getTeamMember(author);
+const href = blogPostPath(post.id);
+const dateLabel = formatBlogDate(publishDate);
+const timeLabel = resolveReadingTime(readingTime, post.body);
+const authorName = member?.name ?? author;
+---
+
+<article class:list={["featured-post", className]}>
+	<div class="featured-post__media">
+		<Image
+			src={cover}
+			alt=""
+			class="featured-post__img"
+			widths={[640, 960, 1280]}
+			sizes="(min-width: 1024px) 50vw, 100vw"
+			quality={88}
+			loading="eager"
+			decoding="async"
+			style={`object-position: ${coverPosition}`}
+		/>
+		<span class="featured-post__badge">Featured</span>
+		<span class="featured-post__stripe" aria-hidden="true"></span>
+	</div>
+	<div class="featured-post__copy">
+		<Label variant="red" size="sm">{category}</Label>
+		<h2 class="featured-post__title">
+			<a href={href}>{title}</a>
+		</h2>
+		<p class="featured-post__excerpt">{excerpt}</p>
+		<p class="featured-post__meta">
+			{authorName} · {dateLabel} · {timeLabel}
+		</p>
+		<div class="featured-post__cta">
+			<Button variant="primary" href={href}>Read article</Button>
+		</div>
+	</div>
+</article>
+
+<style>
+	.featured-post {
+		display: grid;
+		grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+		overflow: hidden;
+		background: var(--color-grey-50);
+		clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+	}
+
+	.featured-post__media {
+		position: relative;
+		min-height: 420px;
+		overflow: hidden;
+		clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+	}
+
+	.featured-post__img,
+	.featured-post :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.featured-post__badge {
+		--slant: 8px;
+		position: absolute;
+		top: 24px;
+		left: 24px;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		min-height: 36px;
+		padding: 0 18px;
+		background: var(--color-navy);
+		color: var(--color-white);
+		font-family: var(--font-heading);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+	}
+
+	.featured-post__stripe {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(--color-red);
+		clip-path: polygon(96% 0, 100% 0, 92% 100%, 88% 100%);
+		pointer-events: none;
+	}
+
+	.featured-post__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18px;
+		padding: 48px 48px 48px 40px;
+		min-width: 0;
+	}
+
+	.featured-post__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 600;
+		font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+		line-height: 1.12;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.featured-post__title a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.featured-post__title a:hover,
+	.featured-post__title a:focus-visible {
+		color: var(--color-red);
+	}
+
+	.featured-post__excerpt {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.7;
+		color: var(--color-text-body);
+		max-width: 42ch;
+	}
+
+	.featured-post__meta {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		color: var(--color-text-body);
+	}
+
+	.featured-post__cta {
+		margin-top: 8px;
+	}
+
+	@media (max-width: 1023px) {
+		.featured-post {
+			grid-template-columns: 1fr;
+		}
+
+		.featured-post__media {
+			min-height: 280px;
+			clip-path: none;
+		}
+
+		.featured-post__copy {
+			padding: 32px 28px 40px;
+		}
+	}
+</style>

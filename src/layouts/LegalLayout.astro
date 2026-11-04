@@ -1,0 +1,358 @@
+---
+import type { MarkdownHeading } from "astro";
+import BaseLayout from "./BaseLayout.astro";
+import Container from "../components/ui/Container.astro";
+import Label from "../components/ui/Label.astro";
+import LegalContents from "../components/legal/LegalContents.astro";
+import SlantedDivider from "../components/ui/SlantedDivider.astro";
+import { parseLegalDate } from "../utils/legalDates";
+import "../styles/legal.css";
+
+interface Props {
+	title: string;
+	highlight?: string;
+	description: string;
+	lastUpdated: string;
+	effectiveFrom?: string;
+	intro?: string;
+	draft?: boolean;
+	headings: MarkdownHeading[];
+}
+
+const {
+	title,
+	highlight,
+	description,
+	lastUpdated,
+	effectiveFrom,
+	intro,
+	draft = false,
+	headings,
+} = Astro.props;
+
+function titleWithHighlight(full: string, hl?: string) {
+	if (!hl) return [{ type: "text" as const, value: full }];
+	const idx = full.toLowerCase().indexOf(hl.toLowerCase());
+	if (idx === -1) return [{ type: "text" as const, value: full }];
+	return [
+		{ type: "text" as const, value: full.slice(0, idx) },
+		{ type: "hl" as const, value: full.slice(idx, idx + hl.length) },
+		{ type: "text" as const, value: full.slice(idx + hl.length) },
+	].filter((p) => p.value.length > 0);
+}
+
+const titleParts = titleWithHighlight(title, highlight);
+const lastUpdatedIso = parseLegalDate(lastUpdated);
+const effectiveFromIso = effectiveFrom
+	? parseLegalDate(effectiveFrom)
+	: undefined;
+---
+
+<BaseLayout
+	title={title}
+	description={description}
+	robots={draft ? "noindex" : undefined}
+>
+	<section id="top" class="legal-hero">
+		<div class="legal-hero__deco" aria-hidden="true">
+			<div class="legal-hero__royal"></div>
+			<div class="legal-hero__stripe"></div>
+			<div class="legal-hero__corner"></div>
+		</div>
+		<div class="legal-hero__content">
+			<Container class="legal-hero__inner">
+				<div class="legal-hero__copy">
+					<Label variant="red">Legal</Label>
+					<h1 class="legal-hero__title">
+						{
+							titleParts.map((part) =>
+								part.type === "hl" ? (
+									<span class="legal-hero__hl">{part.value}</span>
+								) : (
+									part.value
+								),
+							)
+						}
+					</h1>
+					<div class="legal-hero__meta">
+						<span>
+							Last updated:{" "}
+							{
+								lastUpdatedIso ? (
+									<strong>
+										<time datetime={lastUpdatedIso}>{lastUpdated}</time>
+									</strong>
+								) : (
+									<strong>{lastUpdated}</strong>
+								)
+							}
+						</span>
+						{
+							effectiveFrom && (
+								<span>
+									Effective from:{" "}
+									{effectiveFromIso ? (
+										<strong>
+											<time datetime={effectiveFromIso}>{effectiveFrom}</time>
+										</strong>
+									) : (
+										<strong>{effectiveFrom}</strong>
+									)}
+								</span>
+							)
+						}
+					</div>
+				</div>
+			</Container>
+		</div>
+	</section>
+
+	<SlantedDivider
+		height="72px"
+		heightSmall="72px"
+		fromColour="var(--color-navy)"
+		toColour="var(--color-white)"
+		accentColour="var(--color-red)"
+	/>
+
+	<article class="legal">
+		{
+			draft && (
+				<aside class="legal-notice" role="note">
+					<svg
+						class="legal-notice__icon"
+						width="22"
+						height="22"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path
+							d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+							stroke="var(--color-red-deep)"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					<p class="legal-notice__text">
+						<strong>Template content.</strong> Everything in [square brackets] is
+						a placeholder, and the wording is a starting structure only. Have the
+						final text reviewed by a qualified adviser before publishing. Remove
+						this notice once it is.
+					</p>
+				</aside>
+			)
+		}
+
+		{intro && <p class="legal-intro">{intro}</p>}
+
+		<LegalContents headings={headings} />
+
+		<div class="legal-content">
+			<slot />
+		</div>
+
+		<p class="legal-back">
+			<a class="legal-back__link" href="#top">
+				<svg
+					class="legal-back__icon"
+					width="12"
+					height="16"
+					viewBox="0 0 12 16"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+					focusable="false"
+				>
+					<path
+						d="M6 14V2M6 2L1 7M6 2l5 5"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+				Back to top
+			</a>
+		</p>
+	</article>
+</BaseLayout>
+
+<style>
+	.legal-hero {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		isolation: isolate;
+		min-height: 380px;
+		background: var(--color-navy);
+		color: var(--color-white);
+	}
+
+	.legal-hero__deco {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.legal-hero__royal {
+		position: absolute;
+		inset: 0;
+		background: var(--color-royal);
+		clip-path: polygon(78% 0, 100% 0, 100% 100%, 64% 100%);
+	}
+
+	.legal-hero__stripe {
+		position: absolute;
+		inset: 0;
+		background: var(--color-red);
+		clip-path: polygon(75.6% 0, 77% 0, 63% 100%, 61.6% 100%);
+	}
+
+	.legal-hero__corner {
+		position: absolute;
+		inset: 0;
+		background: var(--color-red);
+		clip-path: polygon(100% 60%, 100% 100%, 86% 100%);
+	}
+
+	.legal-hero__content {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		width: 100%;
+	}
+
+	/* Native .container — scoped styles miss child-component roots */
+	.legal-hero__content :global(.legal-hero__inner) {
+		display: flex;
+		align-items: center;
+		width: 100%;
+	}
+
+	.legal-hero__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+		max-width: 600px;
+		padding-block: 72px 80px;
+	}
+
+	.legal-hero__title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: clamp(3rem, 5.4vw, 5rem); /* 48px → 80px */
+		line-height: 0.98;
+		text-transform: uppercase;
+		color: var(--color-white);
+	}
+
+	.legal-hero__hl {
+		color: var(--color-red-on-navy);
+	}
+
+	.legal-hero__meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 28px;
+		font-family: var(--font-body);
+		font-size: 0.875rem; /* 14px */
+		font-weight: 500;
+		color: var(--color-text-on-dark);
+	}
+
+	.legal-hero__meta strong {
+		color: var(--color-white);
+		font-weight: 600;
+	}
+
+	.legal {
+		max-width: 760px;
+		margin: 0 auto;
+		padding: 32px 24px 152px;
+	}
+
+	.legal-notice {
+		display: flex;
+		align-items: flex-start;
+		gap: 16px;
+		padding: 20px 24px;
+		background: var(--color-text-on-red);
+		color: var(--color-navy);
+	}
+
+	.legal-notice__icon {
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	.legal-notice__text {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.875rem; /* 14px */
+		line-height: 1.65;
+	}
+
+	.legal-intro {
+		margin: 12px 0 0;
+		font-family: var(--font-body);
+		font-size: 1.1875rem; /* 19px */
+		font-weight: 500;
+		line-height: 1.65;
+		color: var(--color-navy);
+	}
+
+	.legal-back {
+		margin: 24px 0 0;
+		padding-top: 24px;
+		border-top: 1px solid var(--color-grey-200);
+	}
+
+	.legal-back__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		min-height: 44px;
+		font-family: var(--font-heading);
+		font-weight: 500;
+		font-size: 0.9375rem; /* 15px */
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--color-red);
+	}
+
+	.legal-back__link:hover,
+	.legal-back__link:focus-visible {
+		color: var(--color-red-deep);
+	}
+
+	.legal-back__icon {
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 767px) {
+		.legal-hero__stripe {
+			display: none;
+		}
+
+		.legal-hero__royal {
+			clip-path: polygon(100% 30%, 100% 100%, 55% 100%);
+		}
+	}
+
+	@media (max-width: 639px) {
+		.legal {
+			padding: 24px 20px 128px;
+		}
+	}
+</style>

@@ -1,0 +1,59 @@
+---
+import { sanitizeHref } from "emdash";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import {
+	normalizeSurfaceColor,
+	normalizeSurfaceDivider,
+	normalizeTextColor,
+} from "../../design/surfaces";
+import BetterUnderstanding from "../sections/home/BetterUnderstanding.astro";
+
+type SplitFeatureBlock = Extract<PageContentBlock, { _type: "marketing_split_feature" }>;
+type Props = BlockComponentProps<SplitFeatureBlock>;
+
+const { value } = Astro.props;
+
+const background = normalizeSurfaceColor(
+	"background" in value ? value.background : (value as { tone?: unknown }).tone,
+	"tertiary",
+);
+const textColor = normalizeTextColor(
+	"text_color" in value ? value.text_color : undefined,
+	background,
+);
+const divider = normalizeSurfaceDivider(
+	"divider" in value
+		? value.divider
+		: (value as { slant_top?: unknown }).slant_top,
+	"slant-top",
+);
+
+const cta =
+	value.cta_label && value.cta_url
+		? {
+				label: value.cta_label,
+				href: sanitizeHref(value.cta_url),
+				newTab: value.cta_new_tab === true,
+			}
+		: undefined;
+---
+
+<BetterUnderstanding
+	id={value.anchor_id || undefined}
+	{background}
+	{textColor}
+	{divider}
+	imageSide={value.image_side === "left" ? "left" : "right"}
+	showSlash={value.show_slash !== false}
+	title={value.title}
+	highlight={value.highlight ?? undefined}
+	lead={value.lead ?? undefined}
+	body={value.body ?? undefined}
+	cta={cta}
+	cmsImage={value.image ?? undefined}
+	imageAlt={value.image_alt || value.image?.alt || ""}
+	imagePosition={value.image_position?.trim() || "center"}
+	imageCorners={value.image_corners === "tl-bl" ? "tl-bl" : "tl-br"}
+	imageFilter={value.image_filter === "grayscale" ? "grayscale" : "none"}
+/>

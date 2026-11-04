@@ -1,0 +1,141 @@
+---
+import { auditBarLink } from "../../data/navigation";
+
+interface Props {
+	linkLabel?: string;
+	linkHref?: string;
+	show?: boolean;
+}
+
+const {
+	linkLabel = auditBarLink.label,
+	linkHref = auditBarLink.href,
+	show = true,
+} = Astro.props;
+---
+
+{
+	show && (
+		<aside class="audit-bar" aria-label="Website audit">
+			<div class="audit-bar__deco audit-bar__deco--left" aria-hidden="true" />
+			<div class="audit-bar__deco audit-bar__deco--right" aria-hidden="true" />
+			{/* Native .container — avoids Astro scoped-CSS missing child-component roots */}
+			<div class="container audit-bar__inner">
+				<p class="audit-bar__text">
+					Is your website underperforming?
+					<br class="audit-bar__break" />
+					{" "}Not ranking on Google or showing up in AI search?
+				</p>
+				<a class="audit-bar__link" href={linkHref}>
+					{linkLabel}
+				</a>
+			</div>
+		</aside>
+	)
+}
+
+<style>
+	.audit-bar {
+		position: relative;
+		overflow: hidden;
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	.audit-bar__deco {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 140px;
+		background: var(--color-red-deep);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.audit-bar__deco--left {
+		left: 0;
+		clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+	}
+
+	.audit-bar__deco--right {
+		right: 0;
+		clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
+	}
+
+	@media (max-width: 639px) {
+		.audit-bar__deco {
+			display: none;
+		}
+	}
+
+	.audit-bar__inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 4px 20px;
+		padding-block: 12px;
+		text-align: center;
+	}
+
+	.audit-bar__text,
+	.audit-bar__link {
+		font-family: var(--font-heading);
+		font-weight: 600;
+		line-height: 1.2;
+		color: var(--color-white);
+	}
+
+	.audit-bar__text {
+		margin: 0;
+		font-size: 1rem; /* 16px */
+	}
+
+	/* Forced break only on mobile; tablet/desktop stay one line */
+	.audit-bar__break {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		.audit-bar__break {
+			display: block;
+		}
+	}
+
+	.audit-bar__link {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		font-size: 0.875rem; /* 14px */
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+		text-decoration-thickness: 1px;
+		transition:
+			text-underline-offset 0.15s ease,
+			text-decoration-thickness 0.15s ease;
+	}
+
+	/* Expand hit target without affecting bar height */
+	.audit-bar__link::before {
+		content: "";
+		position: absolute;
+		inset: -12px -6px;
+	}
+
+	.audit-bar__link:hover {
+		color: var(--color-white);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 0.12em;
+	}
+
+	@media (max-width: 1023px) {
+		.audit-bar__text,
+		.audit-bar__link {
+			font-size: 0.75rem; /* 12px */
+		}
+	}
+</style>

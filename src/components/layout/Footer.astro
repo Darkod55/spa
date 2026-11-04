@@ -1,0 +1,308 @@
+---
+import LinkedIn from "../ui/icons/LinkedIn.astro";
+import X from "../ui/icons/X.astro";
+import Instagram from "../ui/icons/Instagram.astro";
+import logoWhite from "../../assets/logo/tspa-white.svg?url";
+import { isActive } from "../../utils/isActive";
+import { footerNav, legalLinks, socialLinks } from "../../data/navigation";
+
+const pathname = Astro.url.pathname;
+const year = new Date().getFullYear();
+
+const iconMap = {
+	linkedin: LinkedIn,
+	x: X,
+	instagram: Instagram,
+} as const;
+---
+
+<footer class="site-footer">
+	<div class="container site-footer__main">
+		<a class="site-footer__logo" href="/" aria-label="The Square Peg Agency – home">
+			<img
+				src={logoWhite}
+				alt="The Square Peg Agency"
+				class="site-footer__logo-img"
+				width="232"
+				height="60"
+				decoding="async"
+			/>
+		</a>
+
+		<nav class="site-footer__nav" aria-label="Footer">
+			<ul class="site-footer__nav-list">
+				{
+					footerNav.map((item) => {
+						const active = isActive(pathname, item.href);
+						return (
+							<li>
+								<a
+									href={item.href}
+									class:list={["site-footer__nav-link", active && "is-active"]}
+									aria-current={active ? "page" : undefined}
+								>
+									{item.label}
+								</a>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</nav>
+
+		<ul class="site-footer__social">
+			{
+				socialLinks.map((item) => {
+					const Icon = iconMap[item.icon];
+					return (
+						<li>
+							<span class="site-footer__social-wrap">
+								<a
+									class="site-footer__social-link"
+									href={item.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label={`The Square Peg Agency on ${item.label}`}
+								>
+									<Icon size={18} />
+								</a>
+							</span>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+
+	<div class="site-footer__bottom">
+		<div class="container site-footer__bottom-inner">
+			<p class="site-footer__copy">
+				© {year} The Square Peg Agency. All rights reserved.
+			</p>
+			<ul class="site-footer__legal">
+				{
+					legalLinks.map((item) => {
+						const active = isActive(pathname, item.href);
+						return (
+							<li>
+								<a
+									class:list={[
+										"site-footer__legal-link",
+										active && "is-active",
+									]}
+									href={item.href}
+									aria-current={active ? "page" : undefined}
+								>
+									{item.label}
+								</a>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		--footer-slant: 40px;
+		position: relative;
+		z-index: 1;
+		margin-top: calc(var(--footer-slant) * -1);
+		background: var(--color-navy);
+		color: var(--color-white);
+		/* Top edge drops left → right, overlapping the section above */
+		clip-path: polygon(0 0, 100% var(--footer-slant), 100% 100%, 0 100%);
+	}
+
+	@media (max-width: 639px) {
+		.site-footer {
+			--footer-slant: 24px;
+		}
+	}
+
+	.site-footer__main {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px 40px;
+		/* Top pad includes the slant cut so nav clears the overlap */
+		padding-top: calc(40px + var(--footer-slant));
+		padding-bottom: 40px;
+		padding-inline: var(--gutter);
+	}
+
+	.site-footer__logo {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		flex-shrink: 0;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.site-footer__logo-img {
+		display: block;
+		height: 60px;
+		width: auto;
+	}
+
+	@media (max-width: 639px) {
+		.site-footer__logo-img {
+			height: 48px;
+		}
+	}
+
+	.site-footer__nav-list {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 4px 28px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-footer__nav-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font-family: var(--font-body);
+		font-size: 0.8125rem; /* 13px */
+		font-weight: 500;
+		line-height: 1.4;
+		color: var(--color-text-on-dark);
+		text-decoration: none;
+		transition: color 0.15s ease, text-decoration-color 0.15s ease;
+	}
+
+	.site-footer__nav-link:hover,
+	.site-footer__nav-link:focus-visible {
+		color: var(--color-white);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.site-footer__nav-link.is-active {
+		color: var(--color-white);
+	}
+
+	.site-footer__social {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* Focus ring lives on the wrap — clip-path would hide outline on the link */
+	.site-footer__social-wrap {
+		display: inline-flex;
+	}
+
+	.site-footer__social-wrap:focus-within {
+		outline: 3px solid var(--color-red-on-navy);
+		outline-offset: 3px;
+	}
+
+	.site-footer__social-link {
+		--slant: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: 44px;
+		background: var(--color-royal);
+		color: var(--color-white);
+		text-decoration: none;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition: background-color 0.15s ease;
+	}
+
+	.site-footer__social-link:hover {
+		background: var(--color-red);
+		color: var(--color-white);
+	}
+
+	.site-footer__social-link:focus,
+	.site-footer__social-link:focus-visible {
+		outline: none;
+	}
+
+	.site-footer__bottom {
+		border-top: 1px solid rgb(255 255 255 / 0.12);
+	}
+
+	.site-footer__bottom-inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px 24px;
+		padding-block: 18px;
+		padding-inline: var(--gutter);
+	}
+
+	.site-footer__copy {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.75rem; /* 12px */
+		font-weight: 400;
+		line-height: 1.5;
+		color: var(--color-text-muted-dark);
+	}
+
+	.site-footer__legal {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 20px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-footer__legal-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font-family: var(--font-body);
+		font-size: 0.75rem; /* 12px */
+		font-weight: 400;
+		line-height: 1.5;
+		color: var(--color-text-muted-dark);
+		text-decoration: none;
+		transition: color 0.15s ease;
+	}
+
+	.site-footer__legal-link:hover,
+	.site-footer__legal-link:focus-visible {
+		color: var(--color-white);
+	}
+
+	.site-footer__legal-link.is-active {
+		color: var(--color-white);
+	}
+
+	@media (max-width: 767px) {
+		.site-footer__main {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 28px;
+		}
+
+		.site-footer__bottom-inner {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+</style>

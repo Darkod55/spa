@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SlantedDivider from "../components/ui/SlantedDivider.astro";
+import NotFoundHero from "../components/sections/notfound/NotFoundHero.astro";
+import HelpfulLinks from "../components/sections/notfound/HelpfulLinks.astro";
+---
+
+<BaseLayout
+	title="Page not found – The Square Peg Agency"
+	description="The page you're looking for may have moved, been renamed or never existed. Find your way back with The Square Peg Agency."
+	robots="noindex"
+>
+	<NotFoundHero />
+	<SlantedDivider
+		height="96px"
+		fromColour="var(--color-navy)"
+		toColour="var(--color-grey-50)"
+		accentColour="var(--color-red)"
+	/>
+	<HelpfulLinks />
+</BaseLayout>

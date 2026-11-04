@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from "astro:content";
+import BlogPostLayout from "../../layouts/BlogPostLayout.astro";
+import PullQuote from "../../components/blog/PullQuote.astro";
+import InlineImage from "../../components/blog/InlineImage.astro";
+import KeyTakeaways from "../../components/blog/KeyTakeaways.astro";
+import {
+	isPublishedPost,
+	relatedPosts,
+	sortPostsByDate,
+} from "../../utils/blog";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+	const entries = await getCollection("blog");
+	const published = entries
+		.filter((entry) => isPublishedPost(entry))
+		.sort(sortPostsByDate);
+
+	return published.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry, all: published },
+	}));
+}
+
+const { entry, all } = Astro.props;
+const { Content, headings } = await render(entry);
+const related = relatedPosts(entry, all);
+---
+
+<BlogPostLayout post={entry} headings={headings} related={related}>
+	<Content
+		components={{
+			PullQuote,
+			InlineImage,
+			KeyTakeaways,
+		}}
+	/>
+</BlogPostLayout>
