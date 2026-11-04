@@ -6,6 +6,9 @@
   "engines": {
     "node": ">=22"
   },
+  "overrides": {
+    "modern-tar": "0.7.7"
+  },
   "emdash": {
     "label": "Marketing",
     "seed": "seed/seed.json"
@@ -28,6 +31,7 @@
     "astro": "^7.3.2",
     "astro-iconset": "^0.0.4",
     "emdash": "^1.3.0",
+    "modern-tar": "0.7.7",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
