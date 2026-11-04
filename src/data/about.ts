@@ -27,8 +27,8 @@ export const aboutVisible = {
 	],
 	cta: { label: "Contact us", href: "/contact" },
 	image: {
-		alt: "A red telephone box on a Westminster street, with the Houses of Parliament behind",
-		position: "50% 60%",
+		alt: "A red telephone box on a rainy Thames embankment, with Big Ben and Westminster Bridge behind",
+		position: "0% 55%",
 	},
 };
 

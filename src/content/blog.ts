@@ -1,7 +1,7 @@
 /**
  * Blog archive page content — hero, newsletter, SEO.
  */
-import phoneBoxWestminster from "../assets/images/blog/phone-box-westminster.jpg";
+import phoneBoxRain from "../assets/images/blog/phone-box-rain.webp";
 
 export const blogMeta = {
 	title: "Marketing Insights Blog",
@@ -17,10 +17,10 @@ export const blogHero = {
 	highlight: "blog",
 	subtitle:
 		"Practical thinking on strategy, branding, websites and marketing for organisations in addiction, mental health and wellness.",
-	image: phoneBoxWestminster,
+	image: phoneBoxRain,
 	imageAlt:
-		"A red telephone box on a London street with Westminster in the background",
-	imagePosition: "70% 40%",
+		"A red telephone box on a rainy Thames embankment, with Big Ben and Westminster Bridge behind",
+	imagePosition: "0% 50%",
 	divider: true,
 	dividerTo: "white" as const,
 	minHeight: "560px",

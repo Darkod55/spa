@@ -19,6 +19,7 @@ const {
 	class: className = "",
 } = Astro.props;
 
+const visibleMembers = members.filter((member) => !member.hidden);
 const titleHtml = highlightBraces(title);
 
 const photoModules = import.meta.glob<{ default: ImageMetadata }>(
@@ -46,7 +47,7 @@ function photoFor(slug: string): ImageMetadata | undefined {
 
 		<div class="team__grid">
 			{
-				members.map((member) => (
+				visibleMembers.map((member) => (
 					<TeamCard
 						name={member.name}
 						role={member.role}

@@ -1,7 +1,7 @@
 /**
  * Services page content — passed as props into theme section components.
  */
-import westminsterBw from "../assets/images/home/westminster-bw.jpg";
+import bigBenBw from "../assets/images/home/big-ben-bw.webp";
 import { serviceIndex } from "../data/services";
 
 export const servicesMeta = {
@@ -18,11 +18,11 @@ export const servicesHero = {
 	highlight: "services",
 	subtitle:
 		"Full-service marketing solutions across branding, design, technology and strategy.",
-	image: westminsterBw,
+	image: bigBenBw,
 	imageAlt:
-		"Westminster Bridge with Big Ben and the Houses of Parliament, and a red London bus",
-	imagePosition: "center 40%",
-	imageFilter: "grayscale" as const,
+		"Big Ben and the Houses of Parliament from Westminster Bridge, in black and white",
+	imagePosition: "100% 50%",
+	imageFilter: "none" as const,
 	divider: true,
 	dividerTo: "white" as const,
 };

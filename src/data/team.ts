@@ -3,6 +3,8 @@ export type TeamMember = {
 	name: string;
 	role: string;
 	bio: string;
+	/** When true, omitted from the About team grid (entry kept for later). */
+	hidden?: boolean;
 };
 
 /** About page team — order is deliberate (grid fill order). */
@@ -30,6 +32,7 @@ export const team: TeamMember[] = [
 		name: "[Name]",
 		role: "Graphic Designer",
 		bio: "[Name] turns ideas into strong visual imagery across digital and print. From social content and campaign assets to websites, publications and wider brand applications, the focus is always on design that communicates clearly and feels cohesive.",
+		hidden: true,
 	},
 	{
 		slug: "niall",

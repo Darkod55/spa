@@ -2,7 +2,7 @@
  * About page content — passed as props into theme section components.
  */
 import londonEye from "../assets/images/about/london-eye.webp";
-import phoneBoxWestminster from "../assets/images/about/phone-box-westminster.jpg";
+import phoneBoxRain from "../assets/images/home/phone-box-rain.webp";
 import {
 	aboutIntro as aboutIntroData,
 	aboutVisible as aboutVisibleData,
@@ -33,7 +33,8 @@ export { aboutIntroData as aboutIntro };
 
 export const aboutVisible = {
 	...aboutVisibleData,
-	image: phoneBoxWestminster,
-	imageAlt: aboutVisibleData.image.alt,
-	imagePosition: aboutVisibleData.image.position,
+	image: phoneBoxRain,
+	imageAlt:
+		"A red telephone box on a rainy Thames embankment, with Big Ben and Westminster Bridge behind",
+	imagePosition: "0% 55%",
 };

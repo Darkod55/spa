@@ -12,7 +12,7 @@ import {
 import BandedImage from "../../ui/BandedImage.astro";
 import SplitFeature from "../SplitFeature.astro";
 import SplitFeatureText from "../SplitFeatureText.astro";
-import westminsterBw from "../../../assets/images/home/westminster-bw.jpg";
+import bigBenBw from "../../../assets/images/home/big-ben-bw.webp";
 
 type RichOrPlain = string | string[] | PortableTextBlock[] | null | undefined;
 
@@ -77,7 +77,7 @@ const resolvedDivider = normalizeSurfaceDivider(
 	"slant-top",
 );
 
-const resolvedImage = cmsImage ? undefined : (image ?? westminsterBw);
+const resolvedImage = cmsImage ? undefined : (image ?? bigBenBw);
 const buttonVariant = isLightSurface(resolvedBackground) ? "primary" : "light";
 const slashColor =
 	resolvedBackground === "primary"

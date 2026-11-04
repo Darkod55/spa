@@ -4,7 +4,7 @@
  */
 
 import type { ImageMetadata } from "astro";
-import towerBridge from "../assets/images/hero/tower-bridge.jpg";
+import phoneBoxRain from "../assets/images/home/phone-box-rain.webp";
 
 export type ServiceNavItem = {
 	id: string;
@@ -344,9 +344,10 @@ export const services: ServiceItem[] = [
 		reverse: true,
 		slant: "up",
 		bands: "none",
-		image: towerBridge,
-		imageAlt: "Tower Bridge in London at dusk, reflected in the Thames",
-		imagePosition: "50% 40%",
+		image: phoneBoxRain,
+		imageAlt:
+			"A red telephone box on a rainy Thames embankment, with Big Ben and Westminster Bridge behind",
+		imagePosition: "0% 50%",
 		imageCorners: "tl-br",
 	},
 ];

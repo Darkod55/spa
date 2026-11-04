@@ -6,7 +6,7 @@ export type NavItem = {
 export type SocialLink = {
 	label: string;
 	href: string;
-	icon: "linkedin" | "x" | "instagram";
+	icon: "linkedin" | "x" | "instagram" | "facebook";
 };
 
 /** Header / mobile panel menu */
@@ -14,7 +14,8 @@ export const mainNav: NavItem[] = [
 	{ label: "Home", href: "/" },
 	{ label: "About", href: "/about" },
 	{ label: "Services", href: "/services" },
-	{ label: "Blog", href: "/blog" },
+	// Blog hidden for now — restore when ready to publish.
+	// { label: "Blog", href: "/blog" },
 ];
 
 /** Footer menu — same as main, plus Contact */
@@ -38,19 +39,25 @@ export const auditBarLink: NavItem = {
 export const socialLinks: SocialLink[] = [
 	{
 		label: "LinkedIn",
-		href: "https://www.linkedin.com/company/PLACEHOLDER",
+		href: "https://www.linkedin.com/company/94275355/",
 		icon: "linkedin",
 	},
 	{
-		label: "X",
-		href: "https://x.com/PLACEHOLDER",
-		icon: "x",
+		label: "Facebook",
+		href: "https://www.facebook.com/thesquarepegagency",
+		icon: "facebook",
 	},
 	{
 		label: "Instagram",
-		href: "https://www.instagram.com/PLACEHOLDER",
+		href: "https://www.instagram.com/thesquarepegagency/",
 		icon: "instagram",
 	},
+	// Hidden until a real profile is ready.
+	// {
+	// 	label: "X",
+	// 	href: "https://x.com/PLACEHOLDER",
+	// 	icon: "x",
+	// },
 ];
 
 export const legalLinks: NavItem[] = [
