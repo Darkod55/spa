@@ -50,7 +50,7 @@ export const howWeHelp = {
 	],
 	outro:
 		"Whether you need support with a single project or ongoing marketing, we'll help you choose the services that are right for your organisation, ensuring every marketing activity has a clear purpose and supports your wider strategy.",
-	cta: { label: "Learn more", href: "/services" },
+	cta: { label: "Explore our services", href: "/services" },
 	servicesLabel: "Our services include",
 	services: [...serviceIndex] satisfies HowWeHelpService[],
 };

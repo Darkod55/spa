@@ -34,16 +34,15 @@ const chars = animate ? Array.from(plainText) : null;
 >
 	{
 		chars ? (
-			<span class="label__text" aria-label={plainText}>
-				{chars.map((ch, i) => (
-					<span
-						class="label__char"
-						style={`--i: ${i}`}
-						aria-hidden="true"
-					>
-						{ch === " " ? "\u00A0" : ch}
-					</span>
-				))}
+			<span class="label__text">
+				<span class="visually-hidden">{plainText}</span>
+				<span aria-hidden="true">
+					{chars.map((ch, i) => (
+						<span class="label__char" style={`--i: ${i}`}>
+							{ch === " " ? "\u00A0" : ch}
+						</span>
+					))}
+				</span>
 			</span>
 		) : (
 			<span class="label__text" set:html={slotHtml} />

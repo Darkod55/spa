@@ -22,6 +22,8 @@ interface Props {
 	filter?: "none" | "grayscale";
 	corners?: "tl-br" | "tl-bl";
 	maxWidth?: string;
+	/** Above-the-fold / LCP images — skip lazy loading. */
+	priority?: boolean;
 	class?: string;
 }
 
@@ -33,6 +35,7 @@ const {
 	filter = "none",
 	corners = "tl-br",
 	maxWidth = "520px",
+	priority = false,
 	class: className,
 } = Astro.props;
 
@@ -54,6 +57,7 @@ const imgClass = [
 				class:list={imgClass}
 				sizes="(min-width: 1024px) 520px, 100vw"
 				style={`object-position: ${position}`}
+				priority={priority}
 			/>
 		) : image ? (
 			<AstroImage
@@ -63,7 +67,9 @@ const imgClass = [
 				widths={[640, 960, 1280, 1600]}
 				sizes="(min-width: 1024px) 960px, 100vw"
 				quality={90}
-				loading="lazy"
+				priority={priority}
+				loading={priority ? "eager" : "lazy"}
+				fetchpriority={priority ? "high" : undefined}
 				decoding="async"
 			/>
 		) : (
@@ -97,6 +103,7 @@ const imgClass = [
 		aspect-ratio: 1 / 1;
 		overflow: hidden;
 		margin: 0;
+		background: var(--color-grey-300);
 	}
 
 	.banded-image__img,

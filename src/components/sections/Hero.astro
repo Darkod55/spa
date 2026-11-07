@@ -155,9 +155,10 @@ const highlightColor =
 					widths={[640, 960, 1280, 1600, 2000]}
 					sizes={photoSizes}
 					quality={90}
+					priority
 					loading="eager"
 					fetchpriority="high"
-					decoding="async"
+					decoding="sync"
 				/>
 			</div>
 		) : (
@@ -197,16 +198,15 @@ const highlightColor =
 							titleParts.map((part) =>
 								part.type === "hl" ? (
 									animateHighlight ? (
-										<span class="hl hl--wash" aria-label={part.value}>
-											{Array.from(part.value).map((ch, i) => (
-												<span
-													class="hl__char"
-													style={`--i: ${i}`}
-													aria-hidden="true"
-												>
-													{ch === " " ? "\u00A0" : ch}
-												</span>
-											))}
+										<span class="hl hl--wash">
+											<span class="visually-hidden">{part.value}</span>
+											<span aria-hidden="true">
+												{Array.from(part.value).map((ch, i) => (
+													<span class="hl__char" style={`--i: ${i}`}>
+														{ch === " " ? "\u00A0" : ch}
+													</span>
+												))}
+											</span>
 										</span>
 									) : (
 										<span class="hl">{part.value}</span>
@@ -293,6 +293,8 @@ const highlightColor =
 		bottom: 0;
 		z-index: 0;
 		overflow: hidden;
+		/* Soft stand-in while the photo bytes arrive */
+		background: var(--color-grey-400);
 	}
 
 	.hero--home .hero__photo {
