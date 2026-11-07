@@ -51,6 +51,8 @@ const effectiveFromIso = effectiveFrom
 <BaseLayout
 	title={title}
 	description={description}
+	datePublished={effectiveFromIso ?? lastUpdatedIso}
+	dateModified={lastUpdatedIso}
 	robots={draft ? "noindex" : undefined}
 >
 	<section id="top" class="legal-hero">

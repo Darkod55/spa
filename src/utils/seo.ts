@@ -23,6 +23,15 @@ export const DEFAULT_OG_IMAGE_ALT =
 export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
+/** Site launch / first publish date for marketing pages without their own chronology. */
+export const SITE_LAUNCH_DATE = "2026-11-07";
+
+/** Schema.org-friendly date (YYYY-MM-DD or full ISO). */
+export function toSchemaDate(value: string | Date): string {
+	if (value instanceof Date) return value.toISOString();
+	return value;
+}
+
 /** Absolute URL from a path or absolute href. */
 export function absoluteUrl(pathOrUrl: string, origin: string): string {
 	if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
@@ -149,14 +158,24 @@ export function webPageJsonLd(opts: {
 	path: string;
 	title: string;
 	description: string;
+	datePublished?: string | Date;
+	dateModified?: string | Date;
 }) {
 	const url = absoluteUrl(opts.path, opts.origin);
+	const datePublished = toSchemaDate(
+		opts.datePublished ?? SITE_LAUNCH_DATE,
+	);
+	const dateModified = toSchemaDate(
+		opts.dateModified ?? opts.datePublished ?? SITE_LAUNCH_DATE,
+	);
 	return {
 		"@type": "WebPage",
 		"@id": `${url}#webpage`,
 		url,
 		name: opts.title,
 		description: opts.description,
+		datePublished,
+		dateModified,
 		isPartOf: { "@id": `${opts.origin}/#website` },
 		about: { "@id": `${opts.origin}/#organization` },
 		inLanguage: "en-GB",

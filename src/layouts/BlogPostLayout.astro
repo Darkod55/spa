@@ -81,6 +81,8 @@ const initial = (member?.name ?? author).trim().charAt(0).toUpperCase();
 	description={excerpt}
 	canonicalPath={path}
 	ogType="article"
+	datePublished={publishDate}
+	dateModified={updatedDate ?? publishDate}
 	robots={draft ? "noindex" : undefined}
 	jsonLd={articleJsonLd}
 >
