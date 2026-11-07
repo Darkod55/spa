@@ -11,6 +11,7 @@ import {
 	DEFAULT_OG_IMAGE_HEIGHT,
 	DEFAULT_OG_IMAGE_WIDTH,
 	documentTitle,
+	resolveSiteOrigin,
 	serializeJsonLd,
 	webPageJsonLd,
 	type JsonLd,
@@ -46,7 +47,11 @@ const {
 
 const settings = await getSiteSettings();
 const fullTitle = documentTitle(title);
-const origin = Astro.site?.origin ?? Astro.url.origin;
+const origin = resolveSiteOrigin({
+	configured: Astro.site,
+	requestOrigin: Astro.url.origin,
+	headers: Astro.request.headers,
+});
 const path = canonicalPath ?? Astro.url.pathname;
 const canonical = absoluteUrl(path, origin);
 const shareImage = absoluteUrl(ogImage, origin);

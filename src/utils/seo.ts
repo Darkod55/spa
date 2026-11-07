@@ -31,6 +31,74 @@ export function absoluteUrl(pathOrUrl: string, origin: string): string {
 	return `${base}${path}`;
 }
 
+/** Loopback / internal hosts must never appear in canonical, OG, or JSON-LD. */
+export function isPrivateOrigin(originOrHost: string): boolean {
+	try {
+		const url = originOrHost.includes("://")
+			? new URL(originOrHost)
+			: new URL(`http://${originOrHost}`);
+		const host = url.hostname.toLowerCase();
+		return (
+			host === "localhost" ||
+			host === "127.0.0.1" ||
+			host === "0.0.0.0" ||
+			host === "::1" ||
+			host.endsWith(".local")
+		);
+	} catch {
+		return /localhost|127\.0\.0\.1/i.test(originOrHost);
+	}
+}
+
+/**
+ * Public site origin for SEO URLs.
+ * Prefer SITE_URL / Astro.site, then forwarded Host — never localhost behind Nginx.
+ */
+export function resolveSiteOrigin(opts: {
+	configured?: string | URL | null;
+	requestOrigin: string;
+	headers?: Headers;
+}): string {
+	const candidates: string[] = [];
+
+	const envConfigured =
+		(typeof process !== "undefined" &&
+			(process.env.SITE_URL ||
+				process.env.PUBLIC_SITE_URL ||
+				process.env.EMDASH_SITE_URL)) ||
+		undefined;
+
+	if (opts.configured) {
+		candidates.push(
+			typeof opts.configured === "string"
+				? opts.configured
+				: opts.configured.origin,
+		);
+	}
+	if (envConfigured) candidates.push(envConfigured);
+
+	const xfHost = opts.headers?.get("x-forwarded-host")?.split(",")[0]?.trim();
+	const host = opts.headers?.get("host")?.split(",")[0]?.trim();
+	const xfProto =
+		opts.headers?.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+
+	if (xfHost) candidates.push(`${xfProto}://${xfHost}`);
+	if (host) candidates.push(`${xfProto}://${host}`);
+	candidates.push(opts.requestOrigin);
+
+	for (const candidate of candidates) {
+		if (!candidate) continue;
+		try {
+			const origin = new URL(candidate).origin;
+			if (!isPrivateOrigin(origin)) return origin;
+		} catch {
+			/* skip invalid */
+		}
+	}
+
+	return opts.requestOrigin;
+}
+
 export function documentTitle(pageTitle: string, brand = BRAND): string {
 	const trimmed = pageTitle.trim();
 	if (!trimmed) return brand;

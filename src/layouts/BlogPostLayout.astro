@@ -20,7 +20,7 @@ import {
 	resolveReadingTime,
 	type BlogPost,
 } from "../utils/blog";
-import { absoluteUrl, DEFAULT_OG_IMAGE } from "../utils/seo";
+import { absoluteUrl, DEFAULT_OG_IMAGE, resolveSiteOrigin } from "../utils/seo";
 import "../styles/post.css";
 
 interface Props {
@@ -50,7 +50,11 @@ const photo = getTeamPhoto(author);
 const dateLabel = formatBlogDate(publishDate);
 const timeLabel = resolveReadingTime(readingTime, post.body);
 const path = blogPostPath(post.id);
-const origin = Astro.site?.origin ?? Astro.url.origin;
+const origin = resolveSiteOrigin({
+	configured: Astro.site,
+	requestOrigin: Astro.url.origin,
+	headers: Astro.request.headers,
+});
 const pageUrl = absoluteUrl(path, origin);
 const shareImageUrl = absoluteUrl(DEFAULT_OG_IMAGE, origin);
 

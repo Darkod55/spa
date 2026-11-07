@@ -15,6 +15,13 @@ export default defineConfig({
 	adapter: node({
 		mode: "standalone",
 	}),
+	// Rebuild request URLs from X-Forwarded-* behind Nginx / Cloudflare
+	security: {
+		allowedDomains: [
+			{ hostname: "thesquarepeg.agency" },
+			{ hostname: "www.thesquarepeg.agency" },
+		],
+	},
 	markdown: {
 		processor: satteri({
 			hastPlugins: [rehypeWrapTables()],
