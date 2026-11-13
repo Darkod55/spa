@@ -1,0 +1,33 @@
+---
+/**
+ * GA4 gtag — only renders when PUBLIC_GA_MEASUREMENT_ID is set (e.g. G-XXXXXXXX).
+ * Cookie consent can wrap this later; for now it loads on every page.
+ */
+const measurementId = (
+	(typeof process !== "undefined" && process.env.PUBLIC_GA_MEASUREMENT_ID) ||
+	import.meta.env.PUBLIC_GA_MEASUREMENT_ID ||
+	""
+).trim();
+
+const enabled = /^G-[A-Z0-9]+$/i.test(measurementId);
+---
+
+{
+	enabled && (
+		<>
+			<script
+				async
+				src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+				is:inline
+			/>
+			<script is:inline define:vars={{ measurementId }}>
+				window.dataLayer = window.dataLayer || [];
+				function gtag() {
+					dataLayer.push(arguments);
+				}
+				gtag("js", new Date());
+				gtag("config", measurementId);
+			</script>
+		</>
+	)
+}

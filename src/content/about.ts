@@ -17,7 +17,7 @@ export const aboutMeta = {
 export const aboutHero = {
 	variant: "page" as const,
 	background: "primary" as const,
-	label: "About us",
+	label: "Who We Are",
 	title: "All about The Square Peg Agency",
 	highlight: "The Square Peg Agency",
 	subtitle: "The agency, the team and why we do things differently.",

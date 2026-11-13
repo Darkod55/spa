@@ -3,6 +3,7 @@ import { getSiteSettings } from "emdash";
 import "../styles/global.css";
 import SiteChrome from "../components/layout/SiteChrome.astro";
 import Footer from "../components/layout/Footer.astro";
+import GoogleAnalytics from "../components/analytics/GoogleAnalytics.astro";
 import {
 	absoluteUrl,
 	buildSiteGraph,
@@ -129,6 +130,7 @@ const faviconType =
 			type="application/ld+json"
 			set:html={serializeJsonLd(graph)}
 		/>
+		<GoogleAnalytics />
 	</head>
 	<body>
 		<a class="skip-link" href="#main">Skip to content</a>

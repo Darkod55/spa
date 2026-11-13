@@ -26,7 +26,7 @@ export const homeHero = {
 	id: "hero",
 	variant: "home" as const,
 	background: "primary" as const,
-	label: "The Square Peg Agency",
+	label: "Different by Design",
 	title: "Why fit in when you can stand out?",
 	highlight: "stand out?",
 	subtitle:
