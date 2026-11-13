@@ -61,7 +61,7 @@ export const socialLinks: SocialLink[] = [
 ];
 
 export const legalLinks: NavItem[] = [
-	{ label: "Privacy policy", href: "/privacy-policy" },
+	{ label: "Privacy Policy", href: "/privacy-policy" },
 	{ label: "Terms and Conditions", href: "/terms-and-conditions" },
 	{ label: "Sitemap", href: "/sitemap.xml" },
 ];
