@@ -25,7 +25,7 @@ export const team: TeamMember[] = [
 		slug: "kyle",
 		name: "Kyle",
 		role: "Project Manager",
-		bio: "Kyle manages projects, tracks tasks and deadlines, and manages the moving parts involved in delivering client work. He helps keep communication clear, work organised, and projects progressing smoothly from one stage to the next.",
+		bio: "Kyle manages projects, tracks tasks and deadlines, and coordinates the moving parts of client delivery. He helps keep communication clear, work organised, and projects progressing smoothly from one stage to the next.",
 	},
 	{
 		slug: "slobodanka",

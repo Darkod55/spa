@@ -46,7 +46,11 @@ const visibleIds = new Set(pageItems.map((post) => post.id));
 const latestTitleHtml = highlightBraces("Latest {articles}");
 ---
 
-<BaseLayout title={blogMeta.title} description={blogMeta.description}>
+<BaseLayout
+	title={blogMeta.title}
+	description={blogMeta.description}
+	lcpImage={blogHero.image}
+>
 	<Hero {...blogHero} />
 
 	{

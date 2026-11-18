@@ -15,7 +15,11 @@ import {
 import { aboutCta } from "../data/about";
 ---
 
-<BaseLayout title={aboutMeta.title} description={aboutMeta.description}>
+<BaseLayout
+	title={aboutMeta.title}
+	description={aboutMeta.description}
+	lcpImage={aboutHero.image}
+>
 	<Hero {...aboutHero} />
 	<AboutIntro {...aboutIntro} />
 	<AboutVisible {...aboutVisible} />

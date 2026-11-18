@@ -7,6 +7,11 @@ import type {
 } from "../../../emdash-env";
 import type { PageContentBlock } from "../../../emdash-env";
 import { normalizeSurfaceColor } from "../../design/surfaces";
+import {
+	HERO_LCP_QUALITY,
+	HERO_LCP_WIDTHS,
+	heroLcpSizes,
+} from "../../utils/hero-lcp";
 import SectionHero from "../sections/Hero.astro";
 
 type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
@@ -79,10 +84,7 @@ const secondaryCta =
 			}
 		: undefined;
 
-const photoSizes =
-	mapped.variant === "home"
-		? "(min-width: 768px) 52vw, 100vw"
-		: "(min-width: 768px) 46vw, 100vw";
+const photoSizes = heroLcpSizes(mapped.variant);
 ---
 
 <SectionHero
@@ -114,7 +116,9 @@ const photoSizes =
 					mapped.imageFilter === "grayscale" && "hero__img--grayscale",
 				]}
 				priority
+				widths={[...HERO_LCP_WIDTHS]}
 				sizes={photoSizes}
+				quality={HERO_LCP_QUALITY}
 				style={`object-position: ${mapped.imagePosition}`}
 			/>
 		)

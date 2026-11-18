@@ -8,7 +8,11 @@ import { servicesHero, servicesMeta, servicesCta } from "../content/services";
 import { services } from "../data/services";
 ---
 
-<BaseLayout title={servicesMeta.title} description={servicesMeta.description}>
+<BaseLayout
+	title={servicesMeta.title}
+	description={servicesMeta.description}
+	lcpImage={servicesHero.image}
+>
 	<Hero {...servicesHero} />
 	<ServicesOverview />
 	{services.map((service) => <ServiceBlock service={service} />)}
