@@ -13,6 +13,8 @@ export default defineConfig({
 	// Absolute URLs for canonical / Open Graph when SITE_URL or PUBLIC_SITE_URL is set
 	site: process.env.SITE_URL || process.env.PUBLIC_SITE_URL,
 	output: "server",
+	// Match internal links (/about, /blog/slug) — avoids host trailing-slash loops
+	trailingSlash: "never",
 	adapter: node({
 		mode: "standalone",
 	}),

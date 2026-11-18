@@ -10,23 +10,30 @@ import {
 	sortPostsByDate,
 } from "../../utils/blog";
 
-export const prerender = true;
+/*
+ * SSR (not prerender): static blog HTML was stuck in a trailing-slash
+ * meta-refresh loop on the Node/LiteSpeed host (both /post and /post/
+ * served the redirect stub to itself).
+ */
+export const prerender = false;
 
-export async function getStaticPaths() {
-	const entries = await getCollection("blog");
-	const published = entries
-		.filter((entry) => isPublishedPost(entry))
-		.sort(sortPostsByDate);
-
-	return published.map((entry) => ({
-		params: { slug: entry.id },
-		props: { entry, all: published },
-	}));
+const slug = Astro.params.slug;
+if (!slug) {
+	return Astro.redirect("/blog");
 }
 
-const { entry, all } = Astro.props;
+const entries = await getCollection("blog");
+const published = entries
+	.filter((entry) => isPublishedPost(entry))
+	.sort(sortPostsByDate);
+const entry = published.find((item) => item.id === slug);
+
+if (!entry) {
+	return Astro.rewrite("/404");
+}
+
 const { Content, headings } = await render(entry);
-const related = relatedPosts(entry, all);
+const related = relatedPosts(entry, published);
 ---
 
 <BlogPostLayout post={entry} headings={headings} related={related}>
