@@ -11,17 +11,21 @@ export const contactPanel = {
 			value: "hello@thesquarepeg.agency",
 			href: "mailto:hello@thesquarepeg.agency",
 		},
-		// Phone + location hidden until confirmed — restore here when ready.
+		{
+			icon: "location" as const,
+			label: "Registered office",
+			value: [
+				"71-75 Shelton Street",
+				"Covent Garden, London",
+				"WC2H 9JQ",
+			],
+		},
+		// Phone hidden until confirmed — restore here when ready.
 		// {
 		// 	icon: "phone" as const,
 		// 	label: "Phone",
 		// 	value: "[+44 (0)000 000 0000]",
 		// 	href: "tel:+440000000000",
-		// },
-		// {
-		// 	icon: "location" as const,
-		// 	label: "Location",
-		// 	value: ["[Building / street]", "[Town / city]", "[Postcode]"],
 		// },
 	],
 };

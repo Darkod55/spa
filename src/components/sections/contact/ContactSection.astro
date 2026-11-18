@@ -2,10 +2,15 @@
 import { Icon } from "astro-iconset/components";
 import Button from "../../ui/Button.astro";
 import SlashMark from "../../ui/SlashMark.astro";
+import LinkedIn from "../../ui/icons/LinkedIn.astro";
+import Instagram from "../../ui/icons/Instagram.astro";
+import Facebook from "../../ui/icons/Facebook.astro";
+import X from "../../ui/icons/X.astro";
 import {
 	contactForm as defaultForm,
 	contactPanel as defaultPanel,
 } from "../../../data/contact";
+import { socialLinks } from "../../../data/navigation";
 import { highlightBraces } from "../../../utils/highlight";
 import logoColor from "../../../assets/logo/tspa-color.svg?url";
 import { getTurnstileSiteKey } from "../../../utils/turnstile";
@@ -27,6 +32,13 @@ const iconMap = {
 	phone: "ph:phone",
 	email: "ph:envelope",
 	location: "ph:map-pin",
+} as const;
+
+const socialIconMap = {
+	linkedin: LinkedIn,
+	instagram: Instagram,
+	facebook: Facebook,
+	x: X,
 } as const;
 ---
 
@@ -74,6 +86,29 @@ const iconMap = {
 											</p>
 										))}
 									</div>
+								</li>
+							);
+						})
+					}
+				</ul>
+
+				<ul class="contact-aside__social" aria-label="Social media">
+					{
+						socialLinks.map((item) => {
+							const SocialIcon = socialIconMap[item.icon];
+							return (
+								<li>
+									<span class="contact-aside__social-wrap">
+										<a
+											class="contact-aside__social-link"
+											href={item.href}
+											target="_blank"
+											rel="noopener noreferrer"
+											aria-label={`The Square Peg Agency on ${item.label}`}
+										>
+											<SocialIcon size={18} />
+										</a>
+									</span>
 								</li>
 							);
 						})
@@ -490,6 +525,55 @@ const iconMap = {
 		margin: 12px 0 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.contact-aside__social {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		margin: 8px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.contact-aside__social-wrap {
+		display: inline-flex;
+	}
+
+	.contact-aside__social-wrap:focus-within {
+		outline: 3px solid var(--color-red-on-navy);
+		outline-offset: 3px;
+	}
+
+	.contact-aside__social-link {
+		--slant: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 52px;
+		height: 44px;
+		background: var(--color-red);
+		color: var(--color-white);
+		text-decoration: none;
+		clip-path: polygon(
+			var(--slant) 0,
+			100% 0,
+			calc(100% - var(--slant)) 100%,
+			0 100%
+		);
+		transition: background-color 0.15s ease;
+	}
+
+	.contact-aside__social-link:hover {
+		background: var(--color-royal);
+		color: var(--color-white);
+	}
+
+	.contact-aside__social-link:focus,
+	.contact-aside__social-link:focus-visible {
+		outline: none;
 	}
 
 	.contact-aside__item {
