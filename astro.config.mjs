@@ -7,6 +7,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 import { rehypeWrapTables } from "./src/utils/rehype-wrap-tables.ts";
+import { stripServerTiming } from "./src/integrations/strip-server-timing.ts";
 
 export default defineConfig({
 	// Absolute URLs for canonical / Open Graph when SITE_URL or PUBLIC_SITE_URL is set
@@ -32,6 +33,9 @@ export default defineConfig({
 		responsiveStyles: true,
 	},
 	integrations: [
+		// Must run before EmDash so this middleware is outermost and can
+		// strip Server-Timing after EmDash attaches it on the way out.
+		stripServerTiming(),
 		react(),
 		mdx(),
 		icon({
