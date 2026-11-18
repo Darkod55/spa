@@ -17,8 +17,7 @@ function alertsEnabled(): boolean {
 function alertRecipient(): string {
 	return (
 		process.env.ANALYTICS_ALERT_EMAIL?.trim() ||
-		process.env.CONTACT_TO_ADDRESS?.trim() ||
-		""
+		"darko@thesquarepeg.agency"
 	);
 }
 
@@ -66,7 +65,8 @@ export async function sendClickAlertEmail(
 			text: `${lines.join("\n")}\n`,
 			clientReference: `click-${type}-${Date.now()}`,
 		});
+		console.info(`[analytics] click alert sent to ${to} (${type})`);
 	} catch (error) {
-		console.error("[analytics] click alert failed", error);
+		console.error(`[analytics] click alert failed for ${to}`, error);
 	}
 }

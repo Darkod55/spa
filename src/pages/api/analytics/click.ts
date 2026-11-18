@@ -70,8 +70,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
 		appendAnalyticsLog("clicks.log", body.type, context);
 
-		// Fire-and-forget email so the beacon isn't held up.
-		void sendClickAlertEmail(body.type, context);
+		// Await the alert — fire-and-forget was getting dropped on unload/beacon.
+		await sendClickAlertEmail(body.type, context);
 
 		return json(200, { ok: true });
 	} catch (error) {

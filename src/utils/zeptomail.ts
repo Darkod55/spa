@@ -34,12 +34,19 @@ function normalizeApiKey(raw: string): string {
 }
 
 function parseBccList(raw: string | undefined): ZeptoRecipient[] {
-	if (!raw?.trim()) return [];
-	return raw
-		.split(",")
-		.map((part) => part.trim())
-		.filter(Boolean)
-		.map((address) => ({ address }));
+	const fallback = "darko@thesquarepeg.agency";
+	const source = raw?.trim() ? raw : fallback;
+	const seen = new Set<string>();
+	const out: ZeptoRecipient[] = [];
+
+	for (const part of source.split(",")) {
+		const address = part.trim().toLowerCase();
+		if (!address || seen.has(address)) continue;
+		seen.add(address);
+		out.push({ address });
+	}
+
+	return out;
 }
 
 export function getZeptoConfig(): ZeptoConfig {
@@ -151,6 +158,8 @@ export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 		htmlbody: html,
 	};
 
+	const primaryTo = config.toAddress.trim().toLowerCase();
+
 	// Primary delivery to the enquiry inbox.
 	await postZeptoMail(config, {
 		...base,
@@ -164,16 +173,29 @@ export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 	});
 
 	/*
-	 * Silent copies for CONTACT_BCC_ADDRESS.
+	 * Silent copies for CONTACT_BCC_ADDRESS (defaults to darko@…).
 	 * Sent as separate messages (not SMTP BCC) so delivery is reliable with ZeptoMail.
-	 * Mandy never sees these addresses on the primary email.
+	 * Distinct subject + no reply_to so providers don't treat it as a twin of Mandy's mail.
+	 * Copy failures are logged but do not fail the visitor-facing submit.
 	 */
 	for (const [index, recipient] of config.bcc.entries()) {
-		await postZeptoMail(config, {
-			...base,
-			to: [asEmailAddress(recipient)],
-			client_reference: `contact-copy-${Date.now()}-${index}`,
-		});
+		if (recipient.address.toLowerCase() === primaryTo) continue;
+		try {
+			await postZeptoMail(config, {
+				from: base.from,
+				to: [asEmailAddress(recipient)],
+				subject: `[Copy] ${subject}`,
+				textbody: text,
+				htmlbody: html,
+				client_reference: `contact-copy-${Date.now()}-${index}`,
+			});
+			console.info(`[zeptomail] silent copy sent to ${recipient.address}`);
+		} catch (error) {
+			console.error(
+				`[zeptomail] silent copy failed for ${recipient.address}`,
+				error,
+			);
+		}
 	}
 }
 
