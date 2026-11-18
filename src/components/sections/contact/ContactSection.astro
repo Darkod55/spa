@@ -158,6 +158,18 @@ const socialIconMap = {
 				method="post"
 				data-contact-form
 			>
+				{/* Attribution — filled by site-analytics.ts */}
+				<input type="hidden" name="referrer_visitor_id" value="" />
+				<input type="hidden" name="referrer_source" value="" />
+				<input type="hidden" name="referrer_medium" value="" />
+				<input type="hidden" name="referrer_campaign" value="" />
+				<textarea
+					class="contact-form__hp"
+					name="referrer_journey"
+					tabindex={-1}
+					aria-hidden="true"
+				></textarea>
+
 				{/* Honeypot — leave empty */}
 				<div class="contact-form__hp" aria-hidden="true">
 					<label for="contact-company-website">Company website</label>

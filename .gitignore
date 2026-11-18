@@ -12,6 +12,8 @@ dist/
 data.db
 data.db-*
 uploads/
+data/analytics/*.log
+data/analytics/*.log.*
 
 # Environment / secrets
 .env

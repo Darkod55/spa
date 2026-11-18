@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
+import { logContactSubmission } from "../../utils/analytics/submissions";
 import { sendContactEmail, type ContactPayload } from "../../utils/zeptomail";
 import { verifyTurnstileToken } from "../../utils/turnstile";
+import { resolveSiteOrigin } from "../../utils/seo";
 
 export const prerender = false;
 
@@ -77,6 +79,30 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 		}
 
 		await sendContactEmail(payload);
+
+		try {
+			const siteOrigin = resolveSiteOrigin({
+				configured: undefined,
+				requestOrigin: new URL(request.url).origin,
+				headers: request.headers,
+			});
+			logContactSubmission({
+				payload,
+				attribution: {
+					visitor_id: asString(form.get("referrer_visitor_id")),
+					source: asString(form.get("referrer_source")),
+					medium: asString(form.get("referrer_medium")),
+					campaign: asString(form.get("referrer_campaign")),
+					journey: asString(form.get("referrer_journey")),
+					page: request.headers.get("referer") || "",
+				},
+				request,
+				clientAddress,
+				siteOrigin,
+			});
+		} catch (logError) {
+			console.error("[contact] analytics log failed", logError);
+		}
 
 		return json(200, {
 			ok: true,

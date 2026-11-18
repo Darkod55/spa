@@ -176,3 +176,26 @@ export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 		});
 	}
 }
+
+/** Plain-text admin alert (contact clicks, etc.). */
+export async function sendPlainAlertEmail(options: {
+	to?: string;
+	subject: string;
+	text: string;
+	clientReference?: string;
+}): Promise<void> {
+	const config = getZeptoConfig();
+	const to = options.to?.trim() || config.toAddress;
+
+	await postZeptoMail(config, {
+		from: {
+			address: config.fromAddress,
+			name: config.fromName,
+		},
+		to: [asEmailAddress({ address: to, name: config.toName })],
+		subject: options.subject,
+		textbody: options.text,
+		htmlbody: `<pre style="font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(options.text)}</pre>`,
+		client_reference: options.clientReference || `alert-${Date.now()}`,
+	});
+}
