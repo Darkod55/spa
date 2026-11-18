@@ -101,6 +101,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		}
 	}
 
+	/*
+	 * Strip trailing slashes (except `/`) so LiteSpeed/Node never serve the
+	 * slash and non-slash forms as separate documents. Uses a real 301, not
+	 * Astro's HTML meta-refresh stub.
+	 */
+	if (
+		!isEmdashPath(url.pathname) &&
+		url.pathname.length > 1 &&
+		url.pathname.endsWith("/")
+	) {
+		const dest = new URL(url.pathname.replace(/\/+$/, "") + url.search, url);
+		return Response.redirect(dest.toString(), 301);
+	}
+
 	const response = await next();
 	const headers = new Headers(response.headers);
 	const contentType = headers.get("content-type") ?? "";

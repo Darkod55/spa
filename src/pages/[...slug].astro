@@ -7,6 +7,12 @@ import LegalLayout from "../layouts/LegalLayout.astro";
 import PageView from "../components/PageView.astro";
 import { heroSeoDefaults } from "../utils/page";
 
+/*
+ * SSR only — prerendered legal HTML under dist/client/<slug>/index.html was
+ * served by LiteSpeed ahead of Node and meta-refreshed into a slash loop.
+ */
+export const prerender = false;
+
 const raw = Astro.params.slug;
 const slugParam = Array.isArray(raw) ? raw.join("/") : raw;
 const slug = decodeSlug(slugParam);

@@ -15,7 +15,7 @@ export const aboutIntro = {
 		"Our team combines deep sector understanding with expertise across the full marketing mix. From branding and websites to content, social media, PPC, video and ongoing marketing leadership, we build our marketing plans around what each client actually needs.",
 		"We believe the best marketing comes from understanding the organisation behind it. That means getting to know your business, your audience, your ambitions and the problems you are trying to solve, then creating a strategy that has a clear purpose and desired outcome.",
 	],
-	cta: { label: "See our work", href: "/work" },
+	cta: { label: "See our services", href: "/services" },
 };
 
 export const aboutVisible = {
