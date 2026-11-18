@@ -3,7 +3,7 @@
  * Edit copy/surfaces here; the page file only composes the sections.
  */
 import towerHero from "../assets/images/hero/tower-hero.webp";
-import bigBenBw from "../assets/images/home/big-ben-bw.webp";
+import towerBridgeFlag from "../assets/images/home/tower-bridge-flag.webp";
 import {
 	beliefs,
 	homeCta,
@@ -73,10 +73,10 @@ export const homeBetterUnderstanding = {
 		label: "Book a discovery call",
 		href: "/contact",
 	},
-	image: bigBenBw,
+	image: towerBridgeFlag,
 	imageAlt:
-		"Big Ben and the Houses of Parliament from Westminster Bridge, in black and white",
-	imagePosition: "100% 50%",
+		"Tower Bridge in monochrome with a colour Union Jack flying from the walkway",
+	imagePosition: "45% 40%",
 	imageCorners: "tl-br" as const,
 	imageFilter: "none" as const,
 };

@@ -24,15 +24,14 @@ export const team: TeamMember[] = [
 	{
 		slug: "kyle",
 		name: "Kyle",
-		role: "Project Coordinator",
-		bio: "Kyle coordinates projects, tracks tasks and deadlines, and manages the moving parts involved in delivering client work. He helps keep communication clear, work organised, and projects progressing smoothly from one stage to the next.",
+		role: "Project Manager",
+		bio: "Kyle manages projects, tracks tasks and deadlines, and manages the moving parts involved in delivering client work. He helps keep communication clear, work organised, and projects progressing smoothly from one stage to the next.",
 	},
 	{
-		slug: "graphic-designer",
-		name: "[Name]",
+		slug: "slobodanka",
+		name: "Slobodanka",
 		role: "Graphic Designer",
-		bio: "[Name] turns ideas into strong visual imagery across digital and print. From social content and campaign assets to websites, publications and wider brand applications, the focus is always on design that communicates clearly and feels cohesive.",
-		hidden: true,
+		bio: "Slobodanka turns ideas into strong visual imagery across digital and print. From social content and campaign assets to websites, publications and wider brand applications, the focus is always on design that communicates clearly and feels cohesive.",
 	},
 	{
 		slug: "niall",

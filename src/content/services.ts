@@ -1,7 +1,7 @@
 /**
  * Services page content — passed as props into theme section components.
  */
-import bigBenBw from "../assets/images/home/big-ben-bw.webp";
+import regentStreet from "../assets/images/services/regent-street.webp";
 import { serviceIndex } from "../data/services";
 
 export const servicesMeta = {
@@ -18,10 +18,10 @@ export const servicesHero = {
 	highlight: "services",
 	subtitle:
 		"Full-service marketing solutions across branding, design, technology and strategy.",
-	image: bigBenBw,
+	image: regentStreet,
 	imageAlt:
-		"Big Ben and the Houses of Parliament from Westminster Bridge, in black and white",
-	imagePosition: "100% 50%",
+		"A red double-decker bus on a curved London street lined with stone buildings",
+	imagePosition: "60% 45%",
 	imageFilter: "none" as const,
 	divider: true,
 	dividerTo: "white" as const,

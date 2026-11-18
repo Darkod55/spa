@@ -6,14 +6,19 @@ import AboutVisible from "../components/sections/about/AboutVisible.astro";
 import Team from "../components/sections/about/Team.astro";
 import CtaSection from "../components/sections/CtaSection.astro";
 import WhySpa from "../components/sections/about/WhySpa.astro";
-import { aboutHero, aboutIntro, aboutMeta } from "../content/about";
+import {
+	aboutHero,
+	aboutIntro,
+	aboutMeta,
+	aboutVisible,
+} from "../content/about";
 import { aboutCta } from "../data/about";
 ---
 
 <BaseLayout title={aboutMeta.title} description={aboutMeta.description}>
 	<Hero {...aboutHero} />
 	<AboutIntro {...aboutIntro} />
-	<AboutVisible />
+	<AboutVisible {...aboutVisible} />
 	<Team />
 	<CtaSection {...aboutCta} />
 	<WhySpa />

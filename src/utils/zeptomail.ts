@@ -7,6 +7,11 @@ export type ContactPayload = {
 	message: string;
 };
 
+type ZeptoRecipient = {
+	address: string;
+	name?: string;
+};
+
 type ZeptoConfig = {
 	apiUrl: string;
 	apiKey: string;
@@ -14,6 +19,7 @@ type ZeptoConfig = {
 	fromName: string;
 	toAddress: string;
 	toName?: string;
+	bcc: ZeptoRecipient[];
 };
 
 function requireEnv(name: string): string {
@@ -22,17 +28,32 @@ function requireEnv(name: string): string {
 	return value;
 }
 
+/** Accept either the raw token or a full `Zoho-enczapikey …` value. */
+function normalizeApiKey(raw: string): string {
+	return raw.replace(/^Zoho-enczapikey\s+/i, "").trim();
+}
+
+function parseBccList(raw: string | undefined): ZeptoRecipient[] {
+	if (!raw?.trim()) return [];
+	return raw
+		.split(",")
+		.map((part) => part.trim())
+		.filter(Boolean)
+		.map((address) => ({ address }));
+}
+
 export function getZeptoConfig(): ZeptoConfig {
 	return {
 		// Classic ZeptoMail endpoint; override if your account uses EU/IN or CPaaS
 		apiUrl:
 			process.env.ZEPTOMAIL_API_URL?.trim() ||
 			"https://api.zeptomail.com/v1.1/email",
-		apiKey: requireEnv("ZEPTOMAIL_API_KEY"),
+		apiKey: normalizeApiKey(requireEnv("ZEPTOMAIL_API_KEY")),
 		fromAddress: requireEnv("ZEPTOMAIL_FROM_ADDRESS"),
 		fromName: process.env.ZEPTOMAIL_FROM_NAME?.trim() || "The Square Peg Agency",
 		toAddress: requireEnv("CONTACT_TO_ADDRESS"),
 		toName: process.env.CONTACT_TO_NAME?.trim() || "The Square Peg Agency",
+		bcc: parseBccList(process.env.CONTACT_BCC_ADDRESS),
 	};
 }
 
@@ -77,9 +98,45 @@ function buildBodies(payload: ContactPayload): { text: string; html: string } {
 	return { text, html };
 }
 
+function asEmailAddress(recipient: ZeptoRecipient) {
+	return {
+		email_address: {
+			address: recipient.address,
+			...(recipient.name ? { name: recipient.name } : {}),
+		},
+	};
+}
+
 export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 	const config = getZeptoConfig();
 	const { text, html } = buildBodies(payload);
+
+	const body: Record<string, unknown> = {
+		from: {
+			address: config.fromAddress,
+			name: config.fromName,
+		},
+		to: [
+			asEmailAddress({
+				address: config.toAddress,
+				name: config.toName,
+			}),
+		],
+		reply_to: [
+			{
+				address: payload.email,
+				name: payload.name,
+			},
+		],
+		subject: `Website enquiry from ${payload.name}`,
+		textbody: text,
+		htmlbody: html,
+		client_reference: `contact-${Date.now()}`,
+	};
+
+	if (config.bcc.length > 0) {
+		body.bcc = config.bcc.map(asEmailAddress);
+	}
 
 	const response = await fetch(config.apiUrl, {
 		method: "POST",
@@ -88,30 +145,7 @@ export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 			"Content-Type": "application/json",
 			Authorization: `Zoho-enczapikey ${config.apiKey}`,
 		},
-		body: JSON.stringify({
-			from: {
-				address: config.fromAddress,
-				name: config.fromName,
-			},
-			to: [
-				{
-					email_address: {
-						address: config.toAddress,
-						name: config.toName,
-					},
-				},
-			],
-			reply_to: [
-				{
-					address: payload.email,
-					name: payload.name,
-				},
-			],
-			subject: `Website enquiry from ${payload.name}`,
-			textbody: text,
-			htmlbody: html,
-			client_reference: `contact-${Date.now()}`,
-		}),
+		body: JSON.stringify(body),
 	});
 
 	if (!response.ok) {
