@@ -7,6 +7,8 @@ import {
 	contactPanel as defaultPanel,
 } from "../../../data/contact";
 import { highlightBraces } from "../../../utils/highlight";
+import logoColor from "../../../assets/logo/tspa-color.svg?url";
+import { getTurnstileSiteKey } from "../../../utils/turnstile";
 
 interface Props {
 	id?: string;
@@ -19,6 +21,7 @@ const panel = defaultPanel;
 const form = defaultForm;
 const panelTitleHtml = highlightBraces(panel.title);
 const formTitleHtml = highlightBraces(form.title);
+const turnstileSiteKey = getTurnstileSiteKey();
 
 const iconMap = {
 	phone: "ph:phone",
@@ -80,7 +83,7 @@ const iconMap = {
 		</aside>
 
 		<div class="contact-form-panel">
-			<header class="contact-form-panel__header">
+			<header class="contact-form-panel__header" data-contact-header>
 				<h2 class="contact-form-panel__title" set:html={formTitleHtml} />
 				<p class="contact-form-panel__intro">{form.intro}</p>
 			</header>
@@ -92,6 +95,27 @@ const iconMap = {
 				role="status"
 				aria-live="polite"
 			></p>
+
+			<div
+				class="contact-form__thanks"
+				data-contact-thanks
+				hidden
+				role="status"
+				aria-live="polite"
+			>
+				<img
+					class="contact-form__thanks-logo"
+					src={logoColor}
+					alt="The Square Peg Agency"
+					width="180"
+					height="47"
+					decoding="async"
+				/>
+				<h3 class="contact-form__thanks-title">Thank you</h3>
+				<p class="contact-form__thanks-copy" data-contact-thanks-copy>
+					Thanks — your message is on its way. We’ll be in touch soon.
+				</p>
+			</div>
 
 			<form
 				class="contact-form"
@@ -201,6 +225,18 @@ const iconMap = {
 					</span>
 				</label>
 
+				{
+					turnstileSiteKey && (
+						<div class="contact-form__turnstile">
+							<div
+								class="cf-turnstile"
+								data-sitekey={turnstileSiteKey}
+								data-theme="light"
+							/>
+						</div>
+					)
+				}
+
 				<div class="contact-form__actions">
 					<Button type="submit" variant="primary">{form.submitLabel}</Button>
 				</div>
@@ -209,9 +245,22 @@ const iconMap = {
 	</div>
 </section>
 
+{turnstileSiteKey && (
+	<script
+		src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+		async
+		defer
+		is:inline
+	/>
+)}
+
 <script>
 	const form = document.querySelector("[data-contact-form]");
 	const status = document.querySelector("[data-contact-status]");
+	const thanks = document.querySelector("[data-contact-thanks]");
+	const thanksCopy = document.querySelector("[data-contact-thanks-copy]");
+	const header = document.querySelector("[data-contact-header]");
+
 	if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) {
 		/* no-op */
 	} else {
@@ -222,6 +271,7 @@ const iconMap = {
 			status.hidden = false;
 			status.dataset.state = "pending";
 			status.textContent = "Sending your message…";
+			if (thanks instanceof HTMLElement) thanks.hidden = true;
 
 			if (submit instanceof HTMLButtonElement) {
 				submit.disabled = true;
@@ -245,10 +295,18 @@ const iconMap = {
 					);
 				}
 
-				status.dataset.state = "success";
-				status.textContent =
+				const message =
 					data.message ||
 					"Thanks — your message is on its way. We’ll be in touch soon.";
+
+				form.hidden = true;
+				status.hidden = true;
+				if (header instanceof HTMLElement) header.hidden = true;
+				if (thanksCopy instanceof HTMLElement) thanksCopy.textContent = message;
+				if (thanks instanceof HTMLElement) {
+					thanks.hidden = false;
+					thanks.focus?.();
+				}
 				form.reset();
 			} catch (error) {
 				status.dataset.state = "error";
@@ -256,9 +314,17 @@ const iconMap = {
 					error instanceof Error
 						? error.message
 						: "Sorry, we couldn’t send your message just now.";
-			} finally {
 				if (submit instanceof HTMLButtonElement) {
 					submit.disabled = false;
+				}
+				const turnstile = (
+					window as Window & {
+						turnstile?: { reset: (el?: HTMLElement) => void };
+					}
+				).turnstile;
+				const widget = form.querySelector(".cf-turnstile");
+				if (turnstile && widget instanceof HTMLElement) {
+					turnstile.reset(widget);
 				}
 			}
 		});
@@ -294,6 +360,44 @@ const iconMap = {
 	.contact-form__status[data-state="error"] {
 		background: #fde8ec;
 		color: var(--color-red-deep);
+	}
+
+	.contact-form__thanks {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18px;
+		padding: 28px 0 8px;
+		max-width: 28rem;
+	}
+
+	.contact-form__thanks[hidden] {
+		display: none;
+	}
+
+	.contact-form__thanks-logo {
+		display: block;
+		width: min(200px, 70%);
+		height: auto;
+	}
+
+	.contact-form__thanks-title {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+		line-height: 1.1;
+		text-transform: uppercase;
+		color: var(--color-navy);
+	}
+
+	.contact-form__thanks-copy {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 1.0625rem;
+		font-weight: 500;
+		line-height: 1.55;
+		color: var(--color-text-body);
 	}
 
 	.contact-form__hp {
@@ -522,6 +626,10 @@ const iconMap = {
 
 	.contact-form__consent :global(a:hover) {
 		color: var(--color-red-deep);
+	}
+
+	.contact-form__turnstile {
+		margin-top: 4px;
 	}
 
 	.contact-form__actions {

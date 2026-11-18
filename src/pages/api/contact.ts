@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { sendContactEmail, type ContactPayload } from "../../utils/zeptomail";
+import { verifyTurnstileToken } from "../../utils/turnstile";
 
 export const prerender = false;
 
@@ -19,13 +20,21 @@ function json(status: number, body: Record<string, unknown>) {
 	});
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
 	try {
 		const form = await request.formData();
 
 		// Honeypot — bots fill this; humans never see it
 		if (asString(form.get("company_website"))) {
 			return json(200, { ok: true });
+		}
+
+		const turnstile = await verifyTurnstileToken({
+			token: asString(form.get("cf-turnstile-response")),
+			remoteIp: clientAddress,
+		});
+		if (!turnstile.ok) {
+			return json(400, { ok: false, error: turnstile.error });
 		}
 
 		const payload: ContactPayload = {

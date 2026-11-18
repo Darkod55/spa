@@ -107,37 +107,10 @@ function asEmailAddress(recipient: ZeptoRecipient) {
 	};
 }
 
-export async function sendContactEmail(payload: ContactPayload): Promise<void> {
-	const config = getZeptoConfig();
-	const { text, html } = buildBodies(payload);
-
-	const body: Record<string, unknown> = {
-		from: {
-			address: config.fromAddress,
-			name: config.fromName,
-		},
-		to: [
-			asEmailAddress({
-				address: config.toAddress,
-				name: config.toName,
-			}),
-		],
-		reply_to: [
-			{
-				address: payload.email,
-				name: payload.name,
-			},
-		],
-		subject: `Website enquiry from ${payload.name}`,
-		textbody: text,
-		htmlbody: html,
-		client_reference: `contact-${Date.now()}`,
-	};
-
-	if (config.bcc.length > 0) {
-		body.bcc = config.bcc.map(asEmailAddress);
-	}
-
+async function postZeptoMail(
+	config: ZeptoConfig,
+	body: Record<string, unknown>,
+): Promise<void> {
 	const response = await fetch(config.apiUrl, {
 		method: "POST",
 		headers: {
@@ -153,5 +126,53 @@ export async function sendContactEmail(payload: ContactPayload): Promise<void> {
 		throw new Error(
 			`ZeptoMail request failed (${response.status})${detail ? `: ${detail}` : ""}`,
 		);
+	}
+}
+
+export async function sendContactEmail(payload: ContactPayload): Promise<void> {
+	const config = getZeptoConfig();
+	const { text, html } = buildBodies(payload);
+	const subject = `Website enquiry from ${payload.name}`;
+	const replyTo = [
+		{
+			address: payload.email,
+			name: payload.name,
+		},
+	];
+
+	const base = {
+		from: {
+			address: config.fromAddress,
+			name: config.fromName,
+		},
+		reply_to: replyTo,
+		subject,
+		textbody: text,
+		htmlbody: html,
+	};
+
+	// Primary delivery to the enquiry inbox.
+	await postZeptoMail(config, {
+		...base,
+		to: [
+			asEmailAddress({
+				address: config.toAddress,
+				name: config.toName,
+			}),
+		],
+		client_reference: `contact-${Date.now()}`,
+	});
+
+	/*
+	 * Silent copies for CONTACT_BCC_ADDRESS.
+	 * Sent as separate messages (not SMTP BCC) so delivery is reliable with ZeptoMail.
+	 * Mandy never sees these addresses on the primary email.
+	 */
+	for (const [index, recipient] of config.bcc.entries()) {
+		await postZeptoMail(config, {
+			...base,
+			to: [asEmailAddress(recipient)],
+			client_reference: `contact-copy-${Date.now()}-${index}`,
+		});
 	}
 }
