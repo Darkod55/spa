@@ -3,9 +3,14 @@ import { getImage } from "astro:assets";
 
 export type HeroLcpVariant = "home" | "page";
 
-/** Shared with Hero.astro so preload srcset matches the rendered <img>. */
-export const HERO_LCP_WIDTHS = [640, 960, 1280, 1600] as const;
-export const HERO_LCP_QUALITY = 78;
+/**
+ * Shared with Hero.astro so preload srcset matches the rendered <img>.
+ * Cap at 1280 — mobile LCP was fetching oversized variants.
+ */
+export const HERO_LCP_WIDTHS = [480, 640, 960, 1280] as const;
+/** Default `src` / preload href — must exist in HERO_LCP_WIDTHS (not the raw asset width). */
+export const HERO_LCP_FALLBACK_WIDTH = 960;
+export const HERO_LCP_QUALITY = 72;
 
 export function heroLcpSizes(variant: HeroLcpVariant = "page"): string {
 	return variant === "home"
@@ -24,6 +29,7 @@ export async function getHeroLcpPreload(
 	const sizes = heroLcpSizes(variant);
 	const optimized = await getImage({
 		src: image,
+		width: HERO_LCP_FALLBACK_WIDTH,
 		widths: [...HERO_LCP_WIDTHS],
 		sizes,
 		format: "webp",

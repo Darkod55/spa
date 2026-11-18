@@ -43,6 +43,17 @@ const imgClass = [
 	"banded-image__img",
 	filter === "grayscale" && "banded-image__img--grayscale",
 ];
+
+/** Display width from maxWidth (e.g. "520px") — keep srcset honest. */
+const displayPx = Number.parseInt(maxWidth, 10);
+const bandedMax = Number.isFinite(displayPx) && displayPx > 0 ? displayPx : 520;
+const bandedSizes = `(min-width: 1024px) ${bandedMax}px, min(100vw, ${Math.max(bandedMax, 640)}px)`;
+const bandedWidths = [
+	Math.min(480, bandedMax * 2),
+	Math.min(640, bandedMax * 2),
+	Math.min(800, bandedMax * 2),
+	Math.min(960, bandedMax * 2),
+].filter((w, i, arr) => w > 0 && arr.indexOf(w) === i);
 ---
 
 <figure
@@ -55,7 +66,7 @@ const imgClass = [
 				image={cmsImage}
 				alt={alt}
 				class:list={imgClass}
-				sizes="(min-width: 1024px) 520px, 100vw"
+				sizes={bandedSizes}
 				style={`object-position: ${position}`}
 				priority={priority}
 			/>
@@ -64,9 +75,11 @@ const imgClass = [
 				src={image}
 				alt={alt}
 				class:list={imgClass}
-				widths={[640, 960, 1280, 1600]}
-				sizes="(min-width: 1024px) 960px, 100vw"
-				quality={90}
+				width={Math.min(800, bandedMax * 2)}
+				widths={bandedWidths}
+				sizes={bandedSizes}
+				quality={78}
+				format="webp"
 				priority={priority}
 				loading={priority ? "eager" : "lazy"}
 				fetchpriority={priority ? "high" : undefined}

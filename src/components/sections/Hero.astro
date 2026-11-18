@@ -8,6 +8,7 @@ import {
 	surfaceClasses,
 } from "../../design/surfaces";
 import {
+	HERO_LCP_FALLBACK_WIDTH,
 	HERO_LCP_QUALITY,
 	HERO_LCP_WIDTHS,
 	heroLcpSizes,
@@ -154,6 +155,7 @@ const highlightColor =
 						"hero__img",
 						imageFilter === "grayscale" && "hero__img--grayscale",
 					]}
+					width={HERO_LCP_FALLBACK_WIDTH}
 					widths={[...HERO_LCP_WIDTHS]}
 					sizes={photoSizes}
 					quality={HERO_LCP_QUALITY}
