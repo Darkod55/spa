@@ -19,6 +19,7 @@ import {
 	getUsedCategories,
 	paginatePosts,
 } from "../utils/blog";
+import { breadcrumbListJsonLd, resolveSiteOrigin } from "../utils/seo";
 
 const allEntries = await getCollection("blog");
 const published = getPublishedPosts(allEntries);
@@ -44,12 +45,24 @@ const { items: pageItems, page, totalPages } = paginatePosts(
 const visibleIds = new Set(pageItems.map((post) => post.id));
 
 const latestTitleHtml = highlightBraces("Latest {articles}");
+
+const origin = resolveSiteOrigin({
+	configured: Astro.site,
+	requestOrigin: Astro.url.origin,
+	headers: Astro.request.headers,
+});
+const blogJsonLd = breadcrumbListJsonLd(origin, [
+	{ name: "Home", path: "/" },
+	{ name: "Blog", path: "/blog" },
+]);
 ---
 
 <BaseLayout
 	title={blogMeta.title}
 	description={blogMeta.description}
+	canonicalPath="/blog"
 	lcpImage={blogHero.image}
+	jsonLd={blogJsonLd}
 >
 	<Hero {...blogHero} />
 

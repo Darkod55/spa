@@ -4,6 +4,8 @@ import { Image } from "astro:assets";
 import Label from "./Label.astro";
 
 interface Props {
+	/** Stable fragment id for schema author urls (e.g. /about#mandy) */
+	id?: string;
 	name: string;
 	role: string;
 	bio: string;
@@ -11,7 +13,7 @@ interface Props {
 	class?: string;
 }
 
-const { name, role, bio, photo, class: className = "" } = Astro.props;
+const { id, name, role, bio, photo, class: className = "" } = Astro.props;
 
 const isPlaceholderName = name.trim() === "[Name]";
 const initial = isPlaceholderName
@@ -20,7 +22,7 @@ const initial = isPlaceholderName
 const photoAlt = `${name}, ${role}`;
 ---
 
-<article class:list={["team-card", className]}>
+<article class:list={["team-card", className]} id={id}>
 	<div class="team-card__photo">
 		{
 			photo ? (

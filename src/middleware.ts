@@ -7,8 +7,8 @@ const DISCOVERY_LINK = [
 ].join(", ");
 
 /**
- * Public HTML CSP — allowlisted for GA4, Turnstile, and Astro inline scripts/styles.
- * Skipped for EmDash admin (it ships its own stricter policy).
+ * Public HTML CSP — allowlisted for GA4, Turnstile, Cloudflare Web Analytics,
+ * and Astro inline scripts/styles. Skipped for EmDash admin (own CSP).
  */
 const PUBLIC_CSP = [
 	"default-src 'self'",
@@ -26,16 +26,20 @@ const PUBLIC_CSP = [
 		"https://www.googletagmanager.com",
 		"https://www.google-analytics.com",
 		"https://challenges.cloudflare.com",
+		// Edge-injected CF Web Analytics beacon (RUM)
+		"https://static.cloudflareinsights.com",
 	].join(" "),
 	[
 		"connect-src",
-		"'self'",
+		"'self'", // auto-injected beacon posts to /cdn-cgi/rum
 		"https://www.google-analytics.com",
 		"https://region1.google-analytics.com",
 		"https://analytics.google.com",
 		"https://*.google-analytics.com",
 		"https://*.analytics.google.com",
 		"https://challenges.cloudflare.com",
+		// Manual CF Web Analytics embed posts here
+		"https://cloudflareinsights.com",
 	].join(" "),
 	"frame-src https://challenges.cloudflare.com",
 	"upgrade-insecure-requests",

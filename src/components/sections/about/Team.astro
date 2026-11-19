@@ -49,6 +49,7 @@ function photoFor(slug: string): ImageMetadata | undefined {
 			{
 				visibleMembers.map((member) => (
 					<TeamCard
+						id={member.slug}
 						name={member.name}
 						role={member.role}
 						bio={member.bio}

@@ -1,3 +1,6 @@
+import { organization } from "../data/organization";
+import { serviceIndex, services } from "../data/services";
+
 export type JsonLd = Record<string, unknown> | Record<string, unknown>[];
 
 export type PageSeo = {
@@ -14,7 +17,13 @@ export type PageSeo = {
 	jsonLd?: JsonLd;
 };
 
-const BRAND = "The Square Peg Agency";
+export type BreadcrumbItem = {
+	name: string;
+	/** Path or absolute URL; omit for the current (final) crumb if desired */
+	path?: string;
+};
+
+const BRAND = organization.name;
 
 /** Default Open Graph / Twitter share image (public/share.webp). */
 export const DEFAULT_OG_IMAGE = "/share.webp";
@@ -121,15 +130,36 @@ export function serializeJsonLd(data: JsonLd): string {
 }
 
 export function organizationJsonLd(origin: string) {
+	const orgId = `${origin}/#organization`;
 	return {
 		"@type": "Organization",
-		"@id": `${origin}/#organization`,
-		name: BRAND,
+		"@id": orgId,
+		name: organization.name,
+		legalName: organization.legalName,
 		url: origin,
 		logo: absoluteUrl("/logo.svg", origin),
+		email: organization.email,
 		description:
 			"Strategic marketing for organisations in the addiction, mental health, behavioural health and wellness sectors.",
 		areaServed: "GB",
+		address: {
+			"@type": "PostalAddress",
+			...organization.address,
+		},
+		identifier: {
+			"@type": "PropertyValue",
+			name: "Company Number",
+			value: organization.companyNumber,
+			propertyID: "Companies House",
+		},
+		sameAs: [...organization.sameAs],
+		contactPoint: {
+			"@type": "ContactPoint",
+			contactType: "sales",
+			email: organization.email,
+			areaServed: "GB",
+			availableLanguage: ["English"],
+		},
 		knowsAbout: [
 			"Addiction sector marketing",
 			"Mental health marketing",
@@ -139,6 +169,64 @@ export function organizationJsonLd(origin: string) {
 			"Website design",
 			"Content marketing",
 		],
+	};
+}
+
+/** BreadcrumbList for the current page path. */
+export function breadcrumbListJsonLd(
+	origin: string,
+	items: BreadcrumbItem[],
+) {
+	return {
+		"@type": "BreadcrumbList",
+		"@id": `${absoluteUrl(items.at(-1)?.path ?? "/", origin)}#breadcrumb`,
+		itemListElement: items.map((item, index) => {
+			const entry: Record<string, unknown> = {
+				"@type": "ListItem",
+				position: index + 1,
+				name: item.name,
+			};
+			if (item.path) {
+				entry.item = absoluteUrl(item.path, origin);
+			}
+			return entry;
+		}),
+	};
+}
+
+/** One Service node per offering on /services. */
+export function serviceJsonLdNodes(origin: string): Record<string, unknown>[] {
+	const byId = new Map(services.map((service) => [service.id, service]));
+
+	return serviceIndex.map((nav) => {
+		const full = byId.get(nav.id);
+		const url = absoluteUrl(`/services#${nav.id}`, origin);
+		return {
+			"@type": "Service",
+			"@id": `${origin}/services#${nav.id}`,
+			name: full?.title ?? nav.title,
+			description: full?.lead ?? full?.tagline ?? nav.title,
+			url,
+			provider: { "@id": `${origin}/#organization` },
+			areaServed: "GB",
+			serviceType: nav.title,
+		};
+	});
+}
+
+/** ItemList wrapping all services (handy for the services page graph). */
+export function servicesItemListJsonLd(origin: string) {
+	const nodes = serviceJsonLdNodes(origin);
+	return {
+		"@type": "ItemList",
+		"@id": `${origin}/services#service-list`,
+		name: "Marketing services",
+		numberOfItems: nodes.length,
+		itemListElement: nodes.map((node, index) => ({
+			"@type": "ListItem",
+			position: index + 1,
+			item: { "@id": node["@id"] },
+		})),
 	};
 }
 

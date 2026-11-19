@@ -6,12 +6,35 @@ import ServiceBlock from "../components/sections/services/ServiceBlock.astro";
 import CtaSection from "../components/sections/CtaSection.astro";
 import { servicesHero, servicesMeta, servicesCta } from "../content/services";
 import { services } from "../data/services";
+import {
+	breadcrumbListJsonLd,
+	resolveSiteOrigin,
+	serviceJsonLdNodes,
+	servicesItemListJsonLd,
+} from "../utils/seo";
+
+const origin = resolveSiteOrigin({
+	configured: Astro.site,
+	requestOrigin: Astro.url.origin,
+	headers: Astro.request.headers,
+});
+
+const servicesJsonLd = [
+	breadcrumbListJsonLd(origin, [
+		{ name: "Home", path: "/" },
+		{ name: "Services", path: "/services" },
+	]),
+	servicesItemListJsonLd(origin),
+	...serviceJsonLdNodes(origin),
+];
 ---
 
 <BaseLayout
 	title={servicesMeta.title}
 	description={servicesMeta.description}
+	canonicalPath="/services"
 	lcpImage={servicesHero.image}
+	jsonLd={servicesJsonLd}
 >
 	<Hero {...servicesHero} />
 	<ServicesOverview />
